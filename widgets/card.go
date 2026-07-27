@@ -46,22 +46,35 @@ func (c *Card) Render(ctx viewport.RenderCtx, rect layout.Rect) {
 
 	sx, sy := Screen(ctx.View, rect.X, rect.Y)
 
-	// ── Shadow ──────────────────────────────────────────────────────
-	if c.config.style.HasShadow() {
-		sh := c.config.style.ShadowCfg()
-		shadowCell := buffer.Cell{Rune: '░', Bg: uint32(sh.Color)}
-		for y := rect.Y + sh.OffsetY; y < rect.Y+rect.Height+sh.OffsetY; y++ {
-			for x := rect.X + sh.OffsetX; x < rect.X+rect.Width+sh.OffsetX; x++ {
-				ctx.Buf.SetCell(x, y, shadowCell)
-			}
-		}
-	}
-
 	// ── Background fill ─────────────────────────────────────────────
 	bgCell := c.config.style.Apply(buffer.Cell{Rune: ' '})
 	for y := sy; y < sy+rect.Height; y++ {
 		for x := sx; x < sx+rect.Width; x++ {
 			ctx.Buf.SetCell(x, y, bgCell)
+		}
+	}
+
+	// ── Shadow (only in areas NOT covered by the card) ──────────────
+	if c.config.style.HasShadow() {
+		sh := c.config.style.ShadowCfg()
+		shadowCell := buffer.Cell{Rune: '░', Bg: uint32(sh.Color)}
+
+		// Bottom strip: below the card, offset by sh.OffsetY.
+		if sh.OffsetY > 0 {
+			for y := sy + rect.Height; y < sy+rect.Height+sh.OffsetY; y++ {
+				for x := sx + sh.OffsetX; x < sx+rect.Width+sh.OffsetX; x++ {
+					ctx.Buf.SetCell(x, y, shadowCell)
+				}
+			}
+		}
+
+		// Right strip: right of the card, offset by sh.OffsetX.
+		if sh.OffsetX > 0 {
+			for y := sy + sh.OffsetY; y < sy+rect.Height+sh.OffsetY; y++ {
+				for x := sx + rect.Width; x < sx+rect.Width+sh.OffsetX; x++ {
+					ctx.Buf.SetCell(x, y, shadowCell)
+				}
+			}
 		}
 	}
 

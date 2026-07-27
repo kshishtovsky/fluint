@@ -73,6 +73,51 @@ func TestCardRoundedBorderWithShadow(t *testing.T) {
 	}
 }
 
+func TestCardShadowDoesNotOverlapContent(t *testing.T) {
+	t.Parallel()
+
+	// Two cards stacked vertically. Shadow of top card must NOT
+	// overwrite the bottom card's content.
+	topCard := NewCard(
+		NewText("TOP", WithStyle(style.New().Foreground(style.White))),
+		WithStyle(
+			style.New().Background(style.Black).RoundedBorder(style.Green).Shadow(1, 1, style.ShadowColor),
+		),
+	)
+	bottomCard := NewCard(
+		NewText("BOT", WithStyle(style.New().Foreground(style.White))),
+		WithStyle(
+			style.New().Background(style.Black).RoundedBorder(style.Cyan),
+		),
+	)
+
+	buf := buffer.NewBuffer(12, 12)
+	topRect := layout.Rect{X: 0, Y: 0, Width: 10, Height: 4}
+	bottomRect := layout.Rect{X: 0, Y: 5, Width: 10, Height: 4}
+
+	// Render bottom first, then top (top's shadow could overwrite bottom).
+	bottomCard.Render(viewport.RenderCtx{Buf: buf}, bottomRect)
+	topCard.Render(viewport.RenderCtx{Buf: buf}, topRect)
+
+	// Bottom card's top-left corner at (0,5) must still be ╭.
+	c := buf.GetCell(0, 5)
+	if c.Rune != '╭' {
+		t.Errorf("bottom card corner(0,5): got %q, want ╭ — shadow overwrote content", c.Rune)
+	}
+
+	// Shadow should be at (1,4) — below top card, right of its left edge.
+	c = buf.GetCell(1, 4)
+	if c.Rune != '░' {
+		t.Errorf("shadow(1,4): got %q, want ░", c.Rune)
+	}
+
+	// Shadow must NOT be inside the top card rect (e.g. at (1,1) should be border/bg, not ░).
+	c = buf.GetCell(1, 1)
+	if c.Rune == '░' {
+		t.Errorf("shadow leaked inside card at (1,1): got ░")
+	}
+}
+
 func TestCardSolidBorder(t *testing.T) {
 	t.Parallel()
 
