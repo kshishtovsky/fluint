@@ -5,12 +5,27 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
+## [v0.5.0] - 2026-07-28
+
+### 新增
+- `style` 包：值语义样式 API，包含 `Color` 类型（packed 0x00RRGGBB）、16 个预定义调色板颜色及 `Style` 结构体。所有修改方法（`Foreground`、`Background`、`Bold`、`Italic`、`Underline`、`Dim`、`Strikethrough`、`Reverse`）按值返回 `Style`，支持零分配链式调用。`Apply(buffer.Cell)` 将颜色和属性合并到单元格副本中。
+- `widgets` 包：`WithStyle(style.Style)` 选项用于向组件传递完整样式。保留现有 `WithForeground`/`WithBackground`/`WithBold` 选项以确保向后兼容。`Button` 新增 `Style()` 和 `SetStyle()` 访问器，支持动画驱动的样式变更。
+- 示例 `examples/ui_kit`：完整子系统演示 — layout（含 Basis/Grow 的 Column 容器）、组件（Text、Button）、样式与动画（通过 `anim.Tween` 实现按钮背景脉冲效果，以 60 fps 循环插值 green ↔ yellow 颜色）。
+
 ## [v0.2.0] - 2026-07-28
 
 ### 新增
 - `anim` 包：缓动函数包 (`EaseFunc`)，提供 9 个命名曲线 — `Linear`、`InQuad`、`OutQuad`、`InOutQuad`、`InCubic`、`OutCubic`、`InOutCubic`、`OutBounce`、`OutElastic`，基于包级函数（非闭包）实现热路径零分配调用。仅 `OutElastic` 使用 `math.Pow`；其余均为纯算术运算。
 - `core/buffer` 包：`Buffer.SetSubCellY(x, y, ySub int, color uint32)` 方法，使用 Unicode 半块字形（`▀` U+2580、`▄` U+2584）实现垂直子像素渲染。通过复用现有 `Cell.Fg`/`Cell.Bg` 字段，在无需额外内存的情况下将垂直分辨率翻倍。
 - ADR-0006：子像素渲染与缓动函数架构决策记录。
+
+## [v0.4.0] - 2026-07-28
+
+### 新增
+- `widgets` 包：基于函数选项模式的基础组件系统 (ADR-0004)。包含 `Node` 接口、共享 `Config` 结构体及 `Option` 函数选项类型，附带辅助函数（`WithWidth`、`WithHeight`、`WithForeground`、`WithBackground`、`WithBold`、`WithItalic`、`WithUnderline`、`WithDim`、`WithStrikethrough`、`WithReverse`、`WithOnPress`）。
+- `widgets` 包：`Text` 组件，支持单行文本渲染、裁剪、颜色与属性设置。渲染路径零分配。
+- `widgets` 包：`Button` 组件，支持标签居中渲染、全矩形背景填充及 `Press()` 回调。渲染路径零分配（0 allocs/op，约 193 ns/op）。
+- Git pre-commit 钩子 (`.git/hooks/pre-commit`)，在每次提交前运行 `go test -race ./...` 和 `golangci-lint run ./...`。
 
 ## [v0.3.0] - 2026-07-28
 

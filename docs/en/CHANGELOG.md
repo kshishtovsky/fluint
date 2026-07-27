@@ -5,12 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.5.0] - 2026-07-28
+
+### Added
+- Package `style`: value-semantic styling API with `Color` type (packed 0x00RRGGBB), 16 predefined palette colors, and `Style` struct. All modification methods (`Foreground`, `Background`, `Bold`, `Italic`, `Underline`, `Dim`, `Strikethrough`, `Reverse`) return `Style` by value — zero-allocation chainable construction. `Apply(buffer.Cell)` merges colors and attributes into a cell copy.
+- Package `widgets`: `WithStyle(style.Style)` option for passing a complete style to widgets. Existing `WithForeground`/`WithBackground`/`WithBold` options are preserved for backward compatibility. `Button` gains `Style()` and `SetStyle()` accessors for animation-driven style mutation.
+- Example `examples/ui_kit`: full subsystem showcase — layout (Column container with Basis/Grow), widgets (Text, Button), style, and animation (pulsing button background via `anim.Tween` with looping green ↔ yellow color interpolation at 60 fps).
+
 ## [v0.2.0] - 2026-07-28
 
 ### Added
 - Package `anim`: Easing functions package (`EaseFunc`) with 9 named curves — `Linear`, `InQuad`, `OutQuad`, `InOutQuad`, `InCubic`, `OutCubic`, `InOutCubic`, `OutBounce`, `OutElastic` — backed by package-level functions (not closures) for zero-allocation hot-path usage. Only `OutElastic` uses `math.Pow`; all other curves use plain arithmetic.
 - Package `core/buffer`: `Buffer.SetSubCellY(x, y, ySub int, color uint32)` method for vertical sub-cell rendering using Unicode half-block glyphs (`▀` U+2580, `▄` U+2584). Doubles vertical resolution with zero additional memory by repurposing existing `Cell.Fg`/`Cell.Bg` fields.
 - ADR-0006: Sub-cell Rendering & Easing Functions architectural decision record.
+
+## [v0.4.0] - 2026-07-28
+
+### Added
+- Package `widgets`: base widget system with Functional Options API (ADR-0004). Includes `Node` interface, shared `Config` struct, and `Option` functional option type with helpers (`WithWidth`, `WithHeight`, `WithForeground`, `WithBackground`, `WithBold`, `WithItalic`, `WithUnderline`, `WithDim`, `WithStrikethrough`, `WithReverse`, `WithOnPress`).
+- Package `widgets`: `Text` widget for single-line text rendering with clipping, color, and attribute support. Zero-allocation render path.
+- Package `widgets`: `Button` widget with centred label rendering, full-rect background fill, and `Press()` callback. Zero-allocation render path (0 allocs/op, ~193 ns/op).
+- Git pre-commit hook (`.git/hooks/pre-commit`) running `go test -race ./...` and `golangci-lint run ./...` before every commit.
 
 ## [v0.3.0] - 2026-07-28
 
