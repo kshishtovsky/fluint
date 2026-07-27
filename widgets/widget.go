@@ -4,7 +4,7 @@
 package widgets
 
 import (
-	"github.com/kshishtovsky/fluint/core/buffer"
+	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/layout"
 	"github.com/kshishtovsky/fluint/style"
 )
@@ -12,11 +12,15 @@ import (
 // Node is the interface implemented by all widgets. It covers rendering,
 // geometry tracking, and event handling.
 type Node interface {
-	Render(buf *buffer.Buffer, rect layout.Rect)
+	// Render draws the widget into ctx.Buf within the given world-space
+	// rect. When ctx.View is non-nil, the widget converts world
+	// coordinates to screen coordinates and culls/skips if fully
+	// outside the viewport.
+	Render(ctx viewport.RenderCtx, rect layout.Rect)
 
-	// Geometry returns the widget's current position and size.
+	// Geometry returns the widget's current world-space position and size.
 	Geometry() layout.Rect
-	// SetGeometry updates the widget's position and size.
+	// SetGeometry updates the widget's world-space position and size.
 	SetGeometry(rect layout.Rect)
 
 	// OnKey handles a keyboard event. Returns true if the event was consumed.
@@ -111,4 +115,22 @@ func newConfig(opts []Option) Config {
 func HitTest(rect layout.Rect, x, y int) bool {
 	return x >= rect.X && x < rect.X+rect.Width &&
 		y >= rect.Y && y < rect.Y+rect.Height
+}
+
+// Visible reports whether a world-space rectangle intersects the
+// viewport. Returns true when view is nil (no culling).
+func Visible(view *viewport.Viewport, wx, wy, ww, wh int) bool {
+	if view == nil {
+		return true
+	}
+	return view.Visible(wx, wy, ww, wh)
+}
+
+// Screen converts world coordinates to screen coordinates using the
+// viewport. Returns the input unchanged when view is nil.
+func Screen(view *viewport.Viewport, wx, wy int) (sx, sy int) {
+	if view == nil {
+		return wx, wy
+	}
+	return view.ScreenX(wx), view.ScreenY(wy)
 }

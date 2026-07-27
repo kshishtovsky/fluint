@@ -3,7 +3,7 @@ package router
 import (
 	"testing"
 
-	"github.com/kshishtovsky/fluint/core/buffer"
+	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/layout"
 	"github.com/kshishtovsky/fluint/widgets"
 )
@@ -20,9 +20,9 @@ type focusableNode struct {
 	focus  bool
 }
 
-func (n *focusableNode) Render(_ *buffer.Buffer, _ layout.Rect) {}
-func (n *focusableNode) Geometry() layout.Rect                  { return n.rect }
-func (n *focusableNode) SetGeometry(rect layout.Rect)           { n.rect = rect }
+func (n *focusableNode) Render(_ viewport.RenderCtx, _ layout.Rect) {}
+func (n *focusableNode) Geometry() layout.Rect                      { return n.rect }
+func (n *focusableNode) SetGeometry(rect layout.Rect)               { n.rect = rect }
 func (n *focusableNode) Focusable() bool                        { return n.focus }
 func (n *focusableNode) OnKey(key widgets.KeyEvent) bool        { n.keys = append(n.keys, key); return true }
 func (n *focusableNode) OnMouse(mouse widgets.MouseEvent) bool  { n.mouse = append(n.mouse, mouse); return true }

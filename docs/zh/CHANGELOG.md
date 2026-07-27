@@ -5,6 +5,17 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
+## [v0.7.0] - 2026-07-28
+
+### 新增
+- `core/viewport` 包：虚拟画布渲染的视口/摄像机系统。`Viewport` 结构体包含 `Width`/`Height`（物理尺寸）和 `OffsetX`/`OffsetY`（摄像机滚动偏移）。方法：`Scroll(dx, dy)`（限制为非负值）、`Center(x, y)`（将摄像机居中于世界坐标点）、`Resize`、`Visible(wx, wy, ww, wh)`（用于剔除的相交测试）、`ScreenX`/`ScreenY`（世界坐标到屏幕坐标转换）。`RenderCtx` 结构体将 `*buffer.Buffer` 与可选的 `*Viewport` 绑定。
+- `widgets` 包：`Node.Render` 签名从 `Render(buf, rect)` 改为 `Render(ctx viewport.RenderCtx, rect)`。组件在完全超出视口时跳过渲染（剔除），并通过 `buffer.SetCell` 进行逐单元格裁剪。传入 `RenderCtx{Buf: buf}`（nil viewport）保持向后兼容的屏幕空间渲染。
+- `widgets` 包：`Visible()` 和 `Screen()` 辅助函数用于视口感知渲染。
+- `router` 包：`DispatchMouseViewport(mouse, view)` 在命中测试前通过视口偏移将屏幕坐标转换为世界坐标。
+
+### 变更
+- `widgets.Node.Render` 签名：`Render(buf *buffer.Buffer, rect layout.Rect)` → `Render(ctx viewport.RenderCtx, rect layout.Rect)`。所有组件、测试和示例已更新。
+
 ## [v0.5.0] - 2026-07-28
 
 ### 新增

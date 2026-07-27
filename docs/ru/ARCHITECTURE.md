@@ -10,6 +10,7 @@ core/buffer         — Клеточная сетка (rune + style + attrs), fr
 core/diff           — Back vs front → минимальный changeset
 core/loop           — Frame scheduler, delta-time, event bus
 core/router         — Маршрутизация событий, управление фокусом, хит-тестинг
+core/viewport       — Камера/вьюпорт, виртуальный холст, куллинг, трансляция координат
 render/ansi         — Changeset → ANSI bytes, synchronized output (mode 2026)
 anim                — Easing, tween/timeline, delta-time интерполяция
 layout              — Flexbox-подобная система компоновки (ADR-0001)
