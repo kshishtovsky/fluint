@@ -5,6 +5,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект придерживается [семантического версионирования](https://semver.org/lang/ru/spec/v2.0.0.html).
 
+## [Невыпущенное]
+
+### Добавлено
+- CI/CD пайплайн GitHub Actions (`.github/workflows/ci.yml`) для прогона Go тестов с детектором гонок, `golangci-lint` и анализа кода SonarQube при пуше/PR в ветку `main`.
+- Файл конфигурации SonarQube (`sonar-project.properties`).
+
 ## [v0.1.0] - 2026-07-27
 
 ### Добавлено

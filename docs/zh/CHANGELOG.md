@@ -5,6 +5,12 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
+## [未发布]
+
+### 新增
+- GitHub Actions CI/CD 流水线 (`.github/workflows/ci.yml`)，在对 `main` 分支进行 push/PR 时自动运行 Go 竞态测试、`golangci-lint` 代码检查和 SonarQube 代码分析。
+- SonarQube 配置文件 (`sonar-project.properties`)。
+
 ## [v0.1.0] - 2026-07-27
 
 ### 新增
