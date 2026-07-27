@@ -31,23 +31,33 @@ func TestCardRoundedBorderWithShadow(t *testing.T) {
 	buf := buffer.NewBuffer(12, 7)
 	card.Render(viewport.RenderCtx{Buf: buf}, layout.Rect{X: 0, Y: 0, Width: 10, Height: 5})
 
-	// Top-left corner intact (no shadow on top row, left side).
+	// All four corners must be preserved.
 	if c := buf.GetCell(0, 0); c.Rune != '╭' {
 		t.Errorf("TL(0,0): got %q, want ╭", c.Rune)
 	}
+	if c := buf.GetCell(9, 0); c.Rune != '╮' {
+		t.Errorf("TR(9,0): got %q, want ╮", c.Rune)
+	}
+	if c := buf.GetCell(0, 4); c.Rune != '╰' {
+		t.Errorf("BL(0,4): got %q, want ╰", c.Rune)
+	}
+	// Bottom-right: ▒ (shadow corner join replaces ╯).
+	if c := buf.GetCell(9, 4); c.Rune != style.ShadowCorner {
+		t.Errorf("BR(9,4): got %q, want %c", c.Rune, style.ShadowCorner)
+	}
 
-	// Top border between corners: ─ (not shadowed).
+	// Top border ─ preserved (no shadow on top row).
 	if c := buf.GetCell(5, 0); c.Rune != '─' {
 		t.Errorf("top(5,0): got %q, want ─", c.Rune)
 	}
 
-	// Left border: │ (not shadowed).
+	// Left border │ preserved (no shadow on left column).
 	if c := buf.GetCell(0, 2); c.Rune != '│' {
 		t.Errorf("left(0,2): got %q, want │", c.Rune)
 	}
 
-	// Right column (col 9): ▐ overwrites right border (except corner).
-	for y := 0; y < 4; y++ {
+	// Right interior (col 9, rows 1-3): ▐.
+	for y := 1; y <= 3; y++ {
 		c := buf.GetCell(9, y)
 		if c.Rune != style.ShadowRight {
 			t.Errorf("right(9,%d): got %q, want %c", y, c.Rune, style.ShadowRight)
@@ -57,17 +67,12 @@ func TestCardRoundedBorderWithShadow(t *testing.T) {
 		}
 	}
 
-	// Bottom row (row 4): ▄ overwrites bottom border (except corner).
-	for x := 0; x < 9; x++ {
+	// Bottom interior (row 4, cols 1-8): ▄.
+	for x := 1; x <= 8; x++ {
 		c := buf.GetCell(x, 4)
 		if c.Rune != style.ShadowBottom {
 			t.Errorf("bottom(%d,4): got %q, want %c", x, c.Rune, style.ShadowBottom)
 		}
-	}
-
-	// Corner: ▒ at (9, 4) — joins right and bottom.
-	if c := buf.GetCell(9, 4); c.Rune != style.ShadowCorner {
-		t.Errorf("corner(9,4): got %q, want %c", c.Rune, style.ShadowCorner)
 	}
 
 	// Child inside.
