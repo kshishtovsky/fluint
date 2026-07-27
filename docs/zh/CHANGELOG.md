@@ -8,6 +8,7 @@
 ## [未发布]
 
 ### 新增
+- `core/buffer` 包：基于面向数据设计 (Data-Oriented Design) 的扁平终端单元格网格 (`Buffer`)，具备 16 字节对齐的 `Cell` 内存布局、零内存分配 `Clear()` 与安全的坐标裁剪。
 - GitHub Actions CI/CD 流水线 (`.github/workflows/ci.yml`)，在对 `main` 分支进行 push/PR 时自动运行 Go 竞态测试、`golangci-lint` 代码检查和 SonarQube 代码分析。
 - 自动化 GitHub Release 流水线 (`.github/workflows/release.yml`)，在推送版本标签 (`v*`) 时自动触发。
 - `internal/term/caps.go` 中的混合终端能力检测机制 (`Detect()` 和 `DetectActive()`)，遵循 ADR-0002 支持 DECRQM mode 2026 同步输出与 Kitty 键盘协议。
