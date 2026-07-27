@@ -15,6 +15,9 @@
 - Гибридный механизм определения возможностей терминала (`Detect()` и `DetectActive()`) в `internal/term/caps.go` с поддержкой синхронизированного вывода (DECRQM mode 2026) и Kitty keyboard протокола согласно ADR-0002.
 - Файл конфигурации SonarCloud (`sonar-project.properties`).
 
+### Исправлено
+- Обновлена версия `golangci-lint-action` до `latest` в CI пайплайне для совместимости с версией Go 1.25.
+
 ## [v0.1.0] - 2026-07-27
 
 ### Добавлено
