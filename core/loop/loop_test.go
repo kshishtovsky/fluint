@@ -87,10 +87,8 @@ func (f *fakeTerm) Read(p []byte) (int, error) {
 		// Park until Close (i.e. f.done) is signalled. The loop's Stop()
 		// closes Quit, which the test wires into done, so the I/O
 		// goroutine unblocks and re-checks Quit at the top of ioLoop.
-		select {
-		case <-f.done:
-			return 0, errFakeClosed
-		}
+		<-f.done
+		return 0, errFakeClosed
 	}
 
 	f.mu.Lock()
@@ -117,26 +115,6 @@ func (f *fakeTerm) Write(p []byte) (int, error) {
 	f.writes = append(f.writes, cp)
 	f.mu.Unlock()
 	return len(p), nil
-}
-
-// waitForWrites polls until the number of writes seen reaches want, or
-// the deadline expires. Used by tests that need to synchronise with the
-// async scheduler.
-func (f *fakeTerm) waitForWrites(t *testing.T, want int, d time.Duration) {
-	t.Helper()
-	deadline := time.Now().Add(d)
-	for {
-		f.mu.Lock()
-		n := len(f.writes)
-		f.mu.Unlock()
-		if n >= want {
-			return
-		}
-		if time.Now().After(deadline) {
-			t.Fatalf("waitForWrites(%d): got %d writes after %v", want, n, d)
-		}
-		time.Sleep(2 * time.Millisecond)
-	}
 }
 
 // cellFromRune builds a buffer.Cell carrying a single rune with default
