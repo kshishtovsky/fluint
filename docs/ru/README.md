@@ -1,9 +1,11 @@
 ![Fluint](../repo_image.jpg)
 
+<p align="center">
+
 # Fluint — Высокопроизводительный TUI-движок на Go
 
-<p align="center">
-  🇬🇧 <a href="../en/README.md">English</a> | 🇷🇺 <strong>Русский</strong> | 🇨🇳 <a href="../zh/README.md">中文</a>
+🇬🇧 <a href="../en/README.md">English</a> | 🇷🇺 <strong>Русский</strong> | 🇨🇳 <a href="../zh/README.md">中文</a>
+
 </p>
 
 ---
