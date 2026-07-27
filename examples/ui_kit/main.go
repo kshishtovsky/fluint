@@ -51,7 +51,47 @@ func main() {
 	r := setupRouter(ui)
 	ctx := viewport.RenderCtx{Buf: l.BackBuf}
 
+	// Initial render.
+	ui.updateFocusStyles(r)
+	ui.status = newStatus(r, ui)
+	renderUI(ctx, ui, l.BackBuf.Width, l.BackBuf.Height)
+
 	for {
+		// Block until an event arrives. No idle spinning — render only
+		// when something actually changed. This eliminates the flicker
+		// caused by Clear() + diff on every frame.
+		select {
+		case key := <-l.KeyEvents:
+			if widgets.KeyCode(key.Code) == widgets.KeyEscape {
+				return
+			}
+			r.DispatchKey(widgets.KeyEvent{
+				Rune: key.Rune,
+				Code: widgets.KeyCode(key.Code),
+				Mod:  widgets.KeyMod(key.Mod),
+			})
+		case mouse := <-l.MouseEvents:
+			r.DispatchMouse(widgets.MouseEvent{
+				Button: widgets.MouseButton(mouse.Button),
+				Action: widgets.MouseAction(mouse.Action),
+				X:      int(mouse.X),
+				Y:      int(mouse.Y),
+				Mod:    widgets.KeyMod(mouse.Mod),
+			})
+		case <-l.ResizeEvents:
+			nw, nh, _ := tty.GetSize()
+			if nw > 0 && nh > 0 {
+				l.BackBuf.Resize(nw, nh)
+			}
+		case err := <-l.Errors:
+			if err != nil {
+				return
+			}
+		case <-l.Quit:
+			return
+		}
+
+		// Drain any remaining queued events before rendering.
 		drain := true
 		for drain {
 			select {
@@ -77,21 +117,13 @@ func main() {
 				if nw > 0 && nh > 0 {
 					l.BackBuf.Resize(nw, nh)
 				}
-			case err := <-l.Errors:
-				if err != nil {
-					return
-				}
 			default:
 				drain = false
 			}
 		}
 
-		// Update button styles based on focus state.
 		ui.updateFocusStyles(r)
-
-		// Update status line.
 		ui.status = newStatus(r, ui)
-
 		renderUI(ctx, ui, l.BackBuf.Width, l.BackBuf.Height)
 	}
 }
