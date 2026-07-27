@@ -33,9 +33,10 @@ const (
 	Brown       Color = 0x008B4513
 	ShadowColor Color = 0x0A0A0A // default shadow — near-black, barely visible
 
-	// Shadow runes — half-blocks for thinner shadows.
-	ShadowBottom rune = '▀' // upper half block — bottom shadow (top half colored)
-	ShadowRight  rune = '▌' // left half block — right shadow (left half colored)
+	// Shadow runes — half-blocks for sub-cell shadows.
+	ShadowBottom rune = '▄' // U+2584 lower half block — bottom shadow
+	ShadowRight  rune = '▐' // U+2590 right half block — right shadow
+	ShadowCorner rune = '▒' // U+2592 medium shade — bottom-right join (softer)
 )
 
 // BorderStyle selects the border drawing mode.

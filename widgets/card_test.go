@@ -1,7 +1,6 @@
 package widgets
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/kshishtovsky/fluint/core/buffer"
@@ -17,8 +16,6 @@ import (
 func TestCardRoundedBorderWithShadow(t *testing.T) {
 	t.Parallel()
 
-	// Card 10x5 with rounded border and shadow offset (1,1).
-	// Child is a simple text widget.
 	child := NewText("Hi", WithStyle(style.New().Foreground(style.White)))
 	card := NewCard(child,
 		WithStyle(
@@ -30,46 +27,54 @@ func TestCardRoundedBorderWithShadow(t *testing.T) {
 		),
 	)
 
-	// Buffer is 12x7 to accommodate shadow overflow.
+	// Buffer 12x7: card at (0,0) 10x5, shadow at col 10 and row 5.
 	buf := buffer.NewBuffer(12, 7)
 	card.Render(viewport.RenderCtx{Buf: buf}, layout.Rect{X: 0, Y: 0, Width: 10, Height: 5})
 
-	dump := dumpBuf(buf)
-
-	// Verify corners at expected positions.
-	// Row 0: ╭────────╮
-	if !strings.Contains(dump[0], "╭") {
-		t.Errorf("row 0 missing top-left corner: %q", dump[0])
+	// Border must be intact (shadow is outside).
+	if c := buf.GetCell(0, 0); c.Rune != '╭' {
+		t.Errorf("TL(0,0): got %q, want ╭", c.Rune)
 	}
-	if !strings.Contains(dump[0], "╮") {
-		t.Errorf("row 0 missing top-right corner: %q", dump[0])
+	if c := buf.GetCell(9, 0); c.Rune != '╮' {
+		t.Errorf("TR(9,0): got %q, want ╮", c.Rune)
 	}
-
-	// Row 4: ╰────────╯
-	if !strings.Contains(dump[4], "╰") {
-		t.Errorf("row 4 missing bottom-left corner: %q", dump[4])
+	if c := buf.GetCell(0, 4); c.Rune != '╰' {
+		t.Errorf("BL(0,4): got %q, want ╰", c.Rune)
 	}
-	if !strings.Contains(dump[4], "╯") {
-		t.Errorf("row 4 missing bottom-right corner: %q", dump[4])
+	if c := buf.GetCell(9, 4); c.Rune != '╯' {
+		t.Errorf("BR(9,4): got %q, want ╯", c.Rune)
+	}
+	if c := buf.GetCell(5, 0); c.Rune != '─' {
+		t.Errorf("top(5,0): got %q, want ─", c.Rune)
 	}
 
-	// Shadow: row 5 should have half-block shadow at x+1.
-	if len(dump) > 5 {
-		// Shadow at (1,5) — offset (1,1) from card bottom.
-		c := buf.GetCell(1, 5)
-		if c.Rune != style.ShadowBottom {
-			t.Errorf("shadow cell(1,5): got %q, want %c", c.Rune, style.ShadowBottom)
+	// Right shadow: ▐ at column 10, rows 0-4.
+	for y := 0; y < 5; y++ {
+		c := buf.GetCell(10, y)
+		if c.Rune != style.ShadowRight {
+			t.Errorf("right(%d, %d): got %q, want %c", 10, y, c.Rune, style.ShadowRight)
 		}
 		if c.Fg != uint32(style.ShadowColor) {
-			t.Errorf("shadow cell(1,5) Fg: got 0x%06X, want 0x%06X", c.Fg, style.ShadowColor)
+			t.Errorf("right(%d,%d) Fg: 0x%06X", 10, y, c.Fg)
 		}
 	}
 
-	// Child "Hi" should be inside the border (row 1, shifted by border+padding).
-	// Border=1, PaddingX=1, so child starts at x=2.
-	c := buf.GetCell(2, 1)
-	if c.Rune != 'H' {
-		t.Errorf("child cell(2,1): got %q, want H", c.Rune)
+	// Bottom shadow: ▄ at row 5, columns 0-9.
+	for x := 0; x < 10; x++ {
+		c := buf.GetCell(x, 5)
+		if c.Rune != style.ShadowBottom {
+			t.Errorf("bottom(%d,5): got %q, want %c", x, c.Rune, style.ShadowBottom)
+		}
+	}
+
+	// Corner: ▒ at (10, 5).
+	if c := buf.GetCell(10, 5); c.Rune != style.ShadowCorner {
+		t.Errorf("corner(10,5): got %q, want %c", c.Rune, style.ShadowCorner)
+	}
+
+	// Child inside.
+	if c := buf.GetCell(2, 1); c.Rune != 'H' {
+		t.Errorf("child(2,1): got %q, want H", c.Rune)
 	}
 }
 
@@ -99,22 +104,29 @@ func TestCardShadowDoesNotOverlapContent(t *testing.T) {
 	bottomCard.Render(viewport.RenderCtx{Buf: buf}, bottomRect)
 	topCard.Render(viewport.RenderCtx{Buf: buf}, topRect)
 
-	// Bottom card's top-left corner at (0,5) must still be ╭.
+	// Top card at (0,0) 10x4. Shadow at col 10, row 4.
+	// Bottom card at (0,5) 10x4. Its top-left corner at (0,5) must be intact.
 	c := buf.GetCell(0, 5)
 	if c.Rune != '╭' {
-		t.Errorf("bottom card corner(0,5): got %q, want ╭ — shadow overwrote content", c.Rune)
+		t.Errorf("bottom card corner(0,5): got %q, want ╭", c.Rune)
 	}
 
-	// Shadow should be at (1,4) — below top card, right of its left edge.
+	// Top card's bottom shadow: ▄ at row 4, columns 0-9.
 	c = buf.GetCell(1, 4)
 	if c.Rune != style.ShadowBottom {
 		t.Errorf("shadow(1,4): got %q, want %c", c.Rune, style.ShadowBottom)
 	}
 
-	// Shadow must NOT be inside the top card rect (e.g. at (1,1) should be border/bg, not shadow).
+	// Top card's right shadow: ▐ at column 10, rows 0-3.
+	c = buf.GetCell(10, 1)
+	if c.Rune != style.ShadowRight {
+		t.Errorf("shadow(10,1): got %q, want %c", c.Rune, style.ShadowRight)
+	}
+
+	// Shadow must NOT be inside the card.
 	c = buf.GetCell(1, 1)
-	if c.Rune == style.ShadowBottom {
-		t.Errorf("shadow leaked inside card at (1,1): got ░")
+	if c.Rune == style.ShadowBottom || c.Rune == style.ShadowRight {
+		t.Errorf("shadow leaked inside card at (1,1): got %c", c.Rune)
 	}
 }
 
@@ -263,21 +275,3 @@ func BenchmarkCardRender(b *testing.B) {
 // ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
-
-// dumpBuf returns the buffer contents as a slice of strings (one per row).
-func dumpBuf(buf *buffer.Buffer) []string {
-	rows := make([]string, buf.Height)
-	for y := 0; y < buf.Height; y++ {
-		var sb strings.Builder
-		for x := 0; x < buf.Width; x++ {
-			c := buf.GetCell(x, y)
-			if c.Rune == 0 {
-				sb.WriteRune(' ')
-			} else {
-				sb.WriteRune(c.Rune)
-			}
-		}
-		rows[y] = sb.String()
-	}
-	return rows
-}
