@@ -5,6 +5,13 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект придерживается [семантического версионирования](https://semver.org/lang/ru/spec/v2.0.0.html).
 
+## [v0.5.0] - 2026-07-28
+
+### Добавлено
+- Пакет `style`: API стилизации с семантикой значений — тип `Color` (packed 0x00RRGGBB), 16 предопределённых цветов палитры и структура `Style`. Все методы модификации (`Foreground`, `Background`, `Bold`, `Italic`, `Underline`, `Dim`, `Strikethrough`, `Reverse`) возвращают `Style` по значению — цепочки вызовов без аллокаций. `Apply(buffer.Cell)` объединяет цвета и атрибуты с копией ячейки.
+- Пакет `widgets`: опция `WithStyle(style.Style)` для передачи готового стиля виджетам. Существующие опции `WithForeground`/`WithBackground`/`WithBold` сохранены для обратной совместимости. `Button` получил методы `Style()` и `SetStyle()` для анимационного изменения стиля.
+- Пример `examples/ui_kit`: демонстрация всех подсистем — layout (Column-контейнер с Basis/Grow), виджеты (Text, Button), стиль и анимация (пульсирующий фон кнопки через `anim.Tween` с зацикленной интерполяцией цвета green ↔ yellow при 60 fps).
+
 ## [v0.2.0] - 2026-07-28
 
 ### Добавлено

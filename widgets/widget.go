@@ -6,6 +6,7 @@ package widgets
 import (
 	"github.com/kshishtovsky/fluint/core/buffer"
 	"github.com/kshishtovsky/fluint/layout"
+	"github.com/kshishtovsky/fluint/style"
 )
 
 // Node is anything that can render itself into a Buffer within a given Rect.
@@ -17,9 +18,7 @@ type Node interface {
 type Config struct {
 	Width   int
 	Height  int
-	Fg      uint32
-	Bg      uint32
-	Attrs   buffer.Attrs
+	style   style.Style
 	onPress func()
 }
 
@@ -36,44 +35,49 @@ func WithHeight(h int) Option {
 	return func(c *Config) { c.Height = h }
 }
 
+// WithStyle sets the style (colors + attributes) from a style.Style value.
+func WithStyle(s style.Style) Option {
+	return func(c *Config) { c.style = s }
+}
+
 // WithForeground sets the foreground color (packed 0x00RRGGBB).
 func WithForeground(fg uint32) Option {
-	return func(c *Config) { c.Fg = fg }
+	return func(c *Config) { c.style = c.style.Foreground(style.Color(fg)) }
 }
 
 // WithBackground sets the background color (packed 0x00RRGGBB).
 func WithBackground(bg uint32) Option {
-	return func(c *Config) { c.Bg = bg }
+	return func(c *Config) { c.style = c.style.Background(style.Color(bg)) }
 }
 
 // WithBold enables bold text.
 func WithBold() Option {
-	return func(c *Config) { c.Attrs |= buffer.Bold }
+	return func(c *Config) { c.style = c.style.Bold() }
 }
 
 // WithItalic enables italic text.
 func WithItalic() Option {
-	return func(c *Config) { c.Attrs |= buffer.Italic }
+	return func(c *Config) { c.style = c.style.Italic() }
 }
 
 // WithUnderline enables underline text.
 func WithUnderline() Option {
-	return func(c *Config) { c.Attrs |= buffer.Underline }
+	return func(c *Config) { c.style = c.style.Underline() }
 }
 
 // WithDim enables dim text.
 func WithDim() Option {
-	return func(c *Config) { c.Attrs |= buffer.Dim }
+	return func(c *Config) { c.style = c.style.Dim() }
 }
 
 // WithStrikethrough enables strikethrough text.
 func WithStrikethrough() Option {
-	return func(c *Config) { c.Attrs |= buffer.Strikethrough }
+	return func(c *Config) { c.style = c.style.Strikethrough() }
 }
 
 // WithReverse enables reverse video.
 func WithReverse() Option {
-	return func(c *Config) { c.Attrs |= buffer.Reverse }
+	return func(c *Config) { c.style = c.style.Reverse() }
 }
 
 // WithOnPress sets the callback invoked when a Button is pressed.

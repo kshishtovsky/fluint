@@ -3,6 +3,7 @@ package widgets
 import (
 	"github.com/kshishtovsky/fluint/core/buffer"
 	"github.com/kshishtovsky/fluint/layout"
+	"github.com/kshishtovsky/fluint/style"
 )
 
 // Button is a widget that renders a clickable label centred inside a
@@ -28,20 +29,31 @@ func (b *Button) Press() {
 	}
 }
 
+// Style returns the button's current style, enabling external mutation
+// (e.g. animation of background color via anim.Tween).
+func (b *Button) Style() style.Style {
+	return b.config.style
+}
+
+// SetStyle replaces the button's style. Intended for animation use cases
+// where a Tween callback updates the style each frame.
+func (b *Button) SetStyle(s style.Style) {
+	b.config.style = s
+}
+
 // Render draws the button into buf within rect. The entire rect is
-// filled with config.Bg, then the label is centred horizontally and
-// vertically.
+// filled with the style background, then the label is centred
+// horizontally and vertically.
 func (b *Button) Render(buf *buffer.Buffer, rect layout.Rect) {
-	bgCell := buffer.Cell{
-		Rune: ' ',
-		Bg:   b.config.Bg,
-	}
+	// Fill the entire rect with background.
+	bgCell := b.config.style.Apply(buffer.Cell{Rune: ' '})
 	for y := rect.Y; y < rect.Y+rect.Height; y++ {
 		for x := rect.X; x < rect.X+rect.Width; x++ {
 			buf.SetCell(x, y, bgCell)
 		}
 	}
 
+	// Count runes for correct centering.
 	runeCount := 0
 	for range b.text {
 		runeCount++
@@ -57,11 +69,8 @@ func (b *Button) Render(buf *buffer.Buffer, rect layout.Rect) {
 		startY = rect.Y
 	}
 
-	labelCell := buffer.Cell{
-		Fg:    b.config.Fg,
-		Bg:    b.config.Bg,
-		Attrs: b.config.Attrs,
-	}
+	// Write the label.
+	labelCell := b.config.style.Apply(buffer.Cell{})
 	x := startX
 	for _, r := range b.text {
 		if x >= rect.X+rect.Width {

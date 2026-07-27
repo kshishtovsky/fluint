@@ -5,6 +5,7 @@ import (
 
 	"github.com/kshishtovsky/fluint/core/buffer"
 	"github.com/kshishtovsky/fluint/layout"
+	"github.com/kshishtovsky/fluint/style"
 )
 
 // ---------------------------------------------------------------------------
@@ -33,13 +34,13 @@ func TestNewButtonOptions(t *testing.T) {
 	if btn.config.Height != 3 {
 		t.Errorf("Height: got %d, want 3", btn.config.Height)
 	}
-	if btn.config.Fg != 0xFF0000 {
-		t.Errorf("Fg: got 0x%06X, want 0xFF0000", btn.config.Fg)
+	if btn.config.style.FG() != 0xFF0000 {
+		t.Errorf("Fg: got 0x%06X, want 0xFF0000", btn.config.style.FG())
 	}
-	if btn.config.Bg != 0x00FF00 {
-		t.Errorf("Bg: got 0x%06X, want 0x00FF00", btn.config.Bg)
+	if btn.config.style.BG() != 0x00FF00 {
+		t.Errorf("Bg: got 0x%06X, want 0x00FF00", btn.config.style.BG())
 	}
-	if btn.config.Attrs&buffer.Bold == 0 {
+	if btn.config.style.Attrs()&buffer.Bold == 0 {
 		t.Error("Bold attribute not set")
 	}
 	if btn.config.onPress == nil {
@@ -51,18 +52,38 @@ func TestNewButtonOptions(t *testing.T) {
 	}
 }
 
+func TestNewButtonWithStyle(t *testing.T) {
+	t.Parallel()
+
+	s := style.New().Foreground(style.Red).Background(style.Blue).Bold().Italic()
+	btn := NewButton("Styled", WithStyle(s))
+
+	if btn.config.style.FG() != style.Red {
+		t.Errorf("FG: got 0x%06X, want Red", btn.config.style.FG())
+	}
+	if btn.config.style.BG() != style.Blue {
+		t.Errorf("BG: got 0x%06X, want Blue", btn.config.style.BG())
+	}
+	if btn.config.style.Attrs()&buffer.Bold == 0 {
+		t.Error("Bold not set")
+	}
+	if btn.config.style.Attrs()&buffer.Italic == 0 {
+		t.Error("Italic not set")
+	}
+}
+
 func TestNewButtonDefaults(t *testing.T) {
 	t.Parallel()
 
 	btn := NewButton("X")
-	if btn.config.Fg != 0 {
-		t.Errorf("default Fg: got 0x%06X, want 0", btn.config.Fg)
+	if btn.config.style.FG() != style.Default {
+		t.Errorf("default FG: got 0x%06X, want Default", btn.config.style.FG())
 	}
-	if btn.config.Bg != 0 {
-		t.Errorf("default Bg: got 0x%06X, want 0", btn.config.Bg)
+	if btn.config.style.BG() != style.Default {
+		t.Errorf("default BG: got 0x%06X, want Default", btn.config.style.BG())
 	}
-	if btn.config.Attrs != 0 {
-		t.Errorf("default Attrs: got %d, want 0", btn.config.Attrs)
+	if btn.config.style.Attrs() != 0 {
+		t.Errorf("default Attrs: got %d, want 0", btn.config.style.Attrs())
 	}
 	if btn.config.onPress != nil {
 		t.Error("default onPress should be nil")
@@ -110,6 +131,26 @@ func TestTextRender(t *testing.T) {
 	// Cells beyond the text should remain zero.
 	if c := buf.GetCell(5, 0); c.Rune != 0 {
 		t.Errorf("cell(5,0): got rune %q, want zero", c.Rune)
+	}
+}
+
+func TestTextRenderWithStyle(t *testing.T) {
+	t.Parallel()
+
+	s := style.New().Foreground(style.Cyan).Background(style.DarkGray).Underline()
+	buf := buffer.NewBuffer(5, 1)
+	txt := NewText("Hi", WithStyle(s))
+	txt.Render(buf, layout.Rect{X: 0, Y: 0, Width: 5, Height: 1})
+
+	c0 := buf.GetCell(0, 0)
+	if c0.Fg != uint32(style.Cyan) {
+		t.Errorf("Fg: got 0x%06X, want Cyan", c0.Fg)
+	}
+	if c0.Bg != uint32(style.DarkGray) {
+		t.Errorf("Bg: got 0x%06X, want DarkGray", c0.Bg)
+	}
+	if c0.Attrs&buffer.Underline == 0 {
+		t.Error("Underline not set")
 	}
 }
 
@@ -180,6 +221,16 @@ func TestButtonRender(t *testing.T) {
 	// The cell after the label on the centre row should be background space.
 	if c := buf.GetCell(6, centreY); c.Rune != ' ' {
 		t.Errorf("cell(6,%d): got %q, want space", centreY, c.Rune)
+	}
+}
+
+func TestButtonSetStyle(t *testing.T) {
+	t.Parallel()
+
+	btn := NewButton("X")
+	btn.SetStyle(style.New().Foreground(style.Green).Background(style.Black))
+	if btn.Style().FG() != style.Green {
+		t.Errorf("FG after SetStyle: got 0x%06X, want Green", btn.Style().FG())
 	}
 }
 

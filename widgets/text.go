@@ -22,21 +22,16 @@ func NewText(text string, opts ...Option) *Text {
 
 // Render writes the text runes into buf starting at (rect.X, rect.Y).
 // If the text exceeds rect.Width it is clipped. Each cell is written
-// with the configured Fg, Bg, and Attrs.
+// with the configured style.
 func (t *Text) Render(buf *buffer.Buffer, rect layout.Rect) {
-	cell := buffer.Cell{
-		Fg:    t.config.Fg,
-		Bg:    t.config.Bg,
-		Attrs: t.config.Attrs,
-	}
-
+	var cell buffer.Cell
 	x := rect.X
 	for _, r := range t.text {
 		if x >= rect.X+rect.Width {
 			break
 		}
 		cell.Rune = r
-		buf.SetCell(x, rect.Y, cell)
+		buf.SetCell(x, rect.Y, t.config.style.Apply(cell))
 		x++
 	}
 }
