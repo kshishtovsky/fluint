@@ -11,13 +11,13 @@ import (
 
 func TestTerminal_EnterExitRawMode(t *testing.T) {
 	master, slave := createPty(t)
-	defer master.Close()
+	defer func() { _ = master.Close() }()
 
 	term, err := NewFromFile(slave)
 	if err != nil {
 		t.Fatalf("NewFromFile failed: %v", err)
 	}
-	defer term.Close()
+	defer func() { _ = term.Close() }()
 
 	beforeTermios, err := unix.IoctlGetTermios(int(slave.Fd()), ioctlGetTermios)
 	if err != nil {
@@ -53,13 +53,13 @@ func TestTerminal_EnterExitRawMode(t *testing.T) {
 
 func TestTerminal_ReadWrite(t *testing.T) {
 	master, slave := createPty(t)
-	defer master.Close()
+	defer func() { _ = master.Close() }()
 
 	term, err := NewFromFile(slave)
 	if err != nil {
 		t.Fatalf("NewFromFile failed: %v", err)
 	}
-	defer term.Close()
+	defer func() { _ = term.Close() }()
 
 	testData := []byte("hello fluint")
 	n, err := term.Write(testData)
@@ -82,13 +82,13 @@ func TestTerminal_ReadWrite(t *testing.T) {
 
 func TestTerminal_GetSize(t *testing.T) {
 	master, slave := createPty(t)
-	defer master.Close()
+	defer func() { _ = master.Close() }()
 
 	term, err := NewFromFile(slave)
 	if err != nil {
 		t.Fatalf("NewFromFile failed: %v", err)
 	}
-	defer term.Close()
+	defer func() { _ = term.Close() }()
 
 	ws := &unix.Winsize{Row: 40, Col: 100}
 	if err := unix.IoctlSetWinsize(int(master.Fd()), unix.TIOCSWINSZ, ws); err != nil {
@@ -108,13 +108,13 @@ func TestTerminal_GetSize(t *testing.T) {
 
 func TestTerminal_ZeroAllocations(t *testing.T) {
 	master, slave := createPty(t)
-	defer master.Close()
+	defer func() { _ = master.Close() }()
 
 	term, err := NewFromFile(slave)
 	if err != nil {
 		t.Fatalf("NewFromFile failed: %v", err)
 	}
-	defer term.Close()
+	defer func() { _ = term.Close() }()
 
 	term.width.Store(80)
 	term.height.Store(24)

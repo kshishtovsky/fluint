@@ -12,6 +12,14 @@
 - `core/buffer` 包：`Buffer.SetSubCellY(x, y, ySub int, color uint32)` 方法，使用 Unicode 半块字形（`▀` U+2580、`▄` U+2584）实现垂直子像素渲染。通过复用现有 `Cell.Fg`/`Cell.Bg` 字段，在无需额外内存的情况下将垂直分辨率翻倍。
 - ADR-0006：子像素渲染与缓动函数架构决策记录。
 
+## [v0.4.0] - 2026-07-28
+
+### 新增
+- `widgets` 包：基于函数选项模式的基础组件系统 (ADR-0004)。包含 `Node` 接口、共享 `Config` 结构体及 `Option` 函数选项类型，附带辅助函数（`WithWidth`、`WithHeight`、`WithForeground`、`WithBackground`、`WithBold`、`WithItalic`、`WithUnderline`、`WithDim`、`WithStrikethrough`、`WithReverse`、`WithOnPress`）。
+- `widgets` 包：`Text` 组件，支持单行文本渲染、裁剪、颜色与属性设置。渲染路径零分配。
+- `widgets` 包：`Button` 组件，支持标签居中渲染、全矩形背景填充及 `Press()` 回调。渲染路径零分配（0 allocs/op，约 193 ns/op）。
+- Git pre-commit 钩子 (`.git/hooks/pre-commit`)，在每次提交前运行 `go test -race ./...` 和 `golangci-lint run ./...`。
+
 ## [v0.3.0] - 2026-07-28
 
 ### 新增
