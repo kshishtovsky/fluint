@@ -39,8 +39,8 @@ func TestTimeline_Completion(t *testing.T) {
 	}
 
 	// After 100 ms the tween should be complete.
-	if !tw.Active {
-		// expected: tween deactivated on last step
+	if tw.Active {
+		t.Error("tween still active after 100 ms")
 	}
 	if lastValue != 100 {
 		t.Errorf("last OnUpdate value = %v, want 100", lastValue)
