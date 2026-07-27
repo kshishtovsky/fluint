@@ -53,8 +53,8 @@ jobs:
         with:
           version: v1.62.0
 
-  sonarqube:
-    name: SonarQube Code Analysis
+  sonarcloud:
+    name: SonarCloud Code Analysis
     runs-on: ubuntu-latest
     needs: [test, lint]
     steps:
@@ -68,12 +68,11 @@ jobs:
         with:
           go-version: '1.25.5'
 
-      - name: Generate Coverage Report for SonarQube
+      - name: Generate Coverage Report for SonarCloud
         run: |
           go test -race -coverprofile=coverage.out ./...
 
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

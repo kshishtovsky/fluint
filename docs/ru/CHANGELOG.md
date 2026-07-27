@@ -9,10 +9,10 @@
 
 ### Добавлено
 - Пакет `core/buffer`: плоская сетка ячеек терминала (`Buffer`) в стиле Data-Oriented Design с выравниванием `Cell` по 16 байт, 0 аллокаций в `Clear()` и безопасным клиппингом координат.
-- CI/CD пайплайн GitHub Actions (`.github/workflows/ci.yml`) для прогона Go тестов с детектором гонок, `golangci-lint` и анализа кода SonarQube при пуше/PR в ветку `main`.
+- CI/CD пайплайн GitHub Actions (`.github/workflows/ci.yml`) для прогона Go тестов с детектором гонок, `golangci-lint` и анализа кода SonarCloud при пуше/PR в ветку `main`.
 - Автоматизированный пайплайн GitHub Release (`.github/workflows/release.yml`), срабатывающий при пуше тегов версий (`v*`).
 - Гибридный механизм определения возможностей терминала (`Detect()` и `DetectActive()`) в `internal/term/caps.go` с поддержкой синхронизированного вывода (DECRQM mode 2026) и Kitty keyboard протокола согласно ADR-0002.
-- Файл конфигурации SonarQube (`sonar-project.properties`).
+- Файл конфигурации SonarCloud (`sonar-project.properties`).
 
 ## [v0.1.0] - 2026-07-27
 
