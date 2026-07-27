@@ -10,6 +10,7 @@
 ### Добавлено
 - CI/CD пайплайн GitHub Actions (`.github/workflows/ci.yml`) для прогона Go тестов с детектором гонок, `golangci-lint` и анализа кода SonarQube при пуше/PR в ветку `main`.
 - Автоматизированный пайплайн GitHub Release (`.github/workflows/release.yml`), срабатывающий при пуше тегов версий (`v*`).
+- Гибридный механизм определения возможностей терминала (`Detect()` и `DetectActive()`) в `internal/term/caps.go` с поддержкой синхронизированного вывода (DECRQM mode 2026) и Kitty keyboard протокола согласно ADR-0002.
 - Файл конфигурации SonarQube (`sonar-project.properties`).
 
 ## [v0.1.0] - 2026-07-27
