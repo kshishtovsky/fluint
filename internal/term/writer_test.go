@@ -5,13 +5,13 @@ import "testing"
 func TestWriterWriteAndReset(t *testing.T) {
 	w := NewWriter(64)
 
-	w.WriteString("hello")
+	_, _ = w.WriteString("hello")
 	if w.Len() != 5 {
 		t.Fatalf("Len() = %d, want 5", w.Len())
 	}
 
-	w.WriteByte(' ')
-	w.Write([]byte("world"))
+	_ = w.WriteByte(' ')
+	_, _ = w.Write([]byte("world"))
 	if w.Len() != 11 {
 		t.Fatalf("Len() = %d, want 11", w.Len())
 	}
@@ -50,7 +50,7 @@ func TestWriterAutoGrow(t *testing.T) {
 	w := NewWriter(4)
 
 	// Write more than initial capacity.
-	w.WriteString("hello world")
+	_, _ = w.WriteString("hello world")
 	if w.Len() != 11 {
 		t.Fatalf("Len() = %d, want 11", w.Len())
 	}
@@ -65,7 +65,7 @@ func TestWriterWriteStringNoAlloc(t *testing.T) {
 
 	allocs := testing.AllocsPerRun(100, func() {
 		w.Reset()
-		w.WriteString(s)
+		_, _ = w.WriteString(s)
 	})
 	if allocs > 0 {
 		t.Fatalf("WriteString: %.0f allocs/op, want 0", allocs)
@@ -78,7 +78,7 @@ func TestWriterWriteNoAlloc(t *testing.T) {
 
 	allocs := testing.AllocsPerRun(100, func() {
 		w.Reset()
-		w.Write(p)
+		_, _ = w.Write(p)
 	})
 	if allocs > 0 {
 		t.Fatalf("Write: %.0f allocs/op, want 0", allocs)
@@ -94,7 +94,7 @@ func BenchmarkWriterWrite(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		w.Reset()
 		for j := 0; j < 100; j++ {
-			w.Write(data)
+			_, _ = w.Write(data)
 		}
 	}
 }
@@ -108,7 +108,7 @@ func BenchmarkWriterWriteString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		w.Reset()
 		for j := 0; j < 100; j++ {
-			w.WriteString(s)
+			_, _ = w.WriteString(s)
 		}
 	}
 }
