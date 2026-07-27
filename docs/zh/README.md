@@ -1,4 +1,4 @@
-![Fluint](../repo_image.png)
+![Fluint](../repo_image.jpg)
 
 # Fluint — 高性能 Go 语言 TUI 引擎
 

@@ -1,4 +1,4 @@
-![Fluint](../repo_image.png)
+![Fluint](../repo_image.jpg)
 
 # Fluint — High-Performance Go TUI Engine
 
