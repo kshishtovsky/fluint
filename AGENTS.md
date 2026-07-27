@@ -60,6 +60,7 @@ Documentation uses a **mirrored 3-language structure** under [`/docs`](file:///e
 
 - **Semantic Versioning:** Follow SemVer (`vX.Y.Z`).
 - **CHANGELOG Maintenance:** Update [`docs/en/CHANGELOG.md`](file:///e:/pet/fluint/docs/en/CHANGELOG.md), [`docs/ru/CHANGELOG.md`](file:///e:/pet/fluint/docs/ru/CHANGELOG.md), and [`docs/zh/CHANGELOG.md`](file:///e:/pet/fluint/docs/zh/CHANGELOG.md) for every new version release.
+- **No "Unreleased" Headers:** NEVER use "Unreleased", "Невыпущенное", or "未发布" in changelogs. Always write the explicit next target version number following the previous release (e.g., `## [v0.1.1]` or `## [v0.2.0]`).
 - **Git Tagging:** Create a new git tag (e.g., `git tag -a v0.1.0 -m "Release v0.1.0"`) for every version bump.
 
 ---
