@@ -12,6 +12,12 @@
 - `core/buffer` 包：`Buffer.SetSubCellY(x, y, ySub int, color uint32)` 方法，使用 Unicode 半块字形（`▀` U+2580、`▄` U+2584）实现垂直子像素渲染。通过复用现有 `Cell.Fg`/`Cell.Bg` 字段，在无需额外内存的情况下将垂直分辨率翻倍。
 - ADR-0006：子像素渲染与缓动函数架构决策记录。
 
+## [v0.3.0] - 2026-07-28
+
+### 新增
+- `anim` 包：`Timeline` 和 `Tween` 零分配动画管理系统。`Tween` 保存插值状态（`Start`、`End`、`Duration`、`EaseFunc`、`OnUpdate`/`OnComplete` 回调）。`Timeline.Add` 调度补间；`Timeline.Update(dt)` 推进所有活动补间，实现 0 bytes/op、0 allocs/op。已完成的补间标记为非活动并跳过。`Timeline.Compact` 原地回收死条目；`Timeline.Clear` 重置时间线并保留切片容量。
+- 示例 `examples/vfx_demo`：实时演示，以 60 fps 驱动 10 个并发补间运行 2.5 秒，证明系统无内存泄漏。
+
 ## [v0.1.1] - 2026-07-27
 
 ### 新增
