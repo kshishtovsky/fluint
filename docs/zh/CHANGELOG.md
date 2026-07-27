@@ -5,6 +5,13 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
+## [v0.9.0] - 2026-07-28
+
+### 新增
+- `style` 包：`BorderStyle` 类型（`BorderNone`、`BorderSolid`、`BorderRounded`）、`ShadowStyle` 结构体、`Style` 上的边框/阴影/内边距字段。构建方法：`SolidBorder(c)`、`RoundedBorder(c)`、`NoBorder()`、`Padding(x, y)`、`Shadow(offsetX, offsetY, color)`、`NoShadow()`。边框字符常量（`BorderSolidTL`、`BorderRoundedTL` 等）作为包级常量，实现零分配渲染。
+- `widgets` 包：`Card` 容器组件 — 绘制圆角/实线边框、可选阴影（`░`）、内部内边距，并将渲染/事件委托给子 `Node`。阴影绘制在卡片后方，边框 1 单元格粗，子组件在边框+内边距区域内渲染。`OnMouse` 仅转发内部区域的点击。渲染零分配（约 580 ns/op）。
+- 示例 `examples/ui_kit`：聊天 UI 概念，使用 `ThinkingCardStyle`（暗淡边框、柔和背景）和 `AnswerCardStyle`（青色边框、正常背景）实现内容块的视觉分离。
+
 ## [v0.8.0] - 2026-07-28
 
 ### 新增

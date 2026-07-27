@@ -114,21 +114,32 @@ func CursorStyle() style.Style {
 	return style.New().Foreground(InkPrimary).Background(Paper).Bold()
 }
 
-// ── Layout constants ────────────────────────────────────────────────
-// Consistent spacing via layout engine, not pixel values.
+// ── Card styles (chat UI) ───────────────────────────────────────────
+// Cards separate content blocks visually. Two archetypes:
+//   - ThinkingCard: dim border, muted bg — "the model is reasoning"
+//   - AnswerCard: bright border, normal bg — "the model is responding"
 
-const (
-	// BorderRunes for drawing simple box borders.
-	BorderH  = '─'
-	BorderV  = '│'
-	BorderTL = '┌'
-	BorderTR = '┐'
-	BorderBL = '└'
-	BorderBR = '┘'
+var (
+	// ThinkingCard — subdued, rounded border, subtle shadow.
+	ThinkingCardStyle = style.New().
+				Background(PaperAlt).
+				RoundedBorder(InkMuted).
+				Shadow(1, 1, style.ShadowColor).
+				Padding(1, 0)
+
+	// AnswerCard — prominent, rounded border, accent border color.
+	AnswerCardStyle = style.New().
+			Background(Paper).
+			RoundedBorder(AccentCool).
+			Shadow(1, 1, style.ShadowColor).
+			Padding(1, 0)
+
+	// SectionCard — for grouping widgets (buttons, list, etc).
+	SectionCardStyle = style.New().
+				Background(Paper).
+				RoundedBorder(InkMuted).
+				Padding(1, 0)
 )
-
-// BorderStyle for box-drawing characters.
-var BorderStyle = style.New().Foreground(InkMuted).Background(Paper)
 
 // ── Contrast verification ───────────────────────────────────────────
 // Hallmark gates 40-41: every Fg/Bg pair must have sufficient contrast.
