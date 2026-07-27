@@ -9,9 +9,22 @@ import (
 	"github.com/kshishtovsky/fluint/style"
 )
 
-// Node is anything that can render itself into a Buffer within a given Rect.
+// Node is the interface implemented by all widgets. It covers rendering,
+// geometry tracking, and event handling.
 type Node interface {
 	Render(buf *buffer.Buffer, rect layout.Rect)
+
+	// Geometry returns the widget's current position and size.
+	Geometry() layout.Rect
+	// SetGeometry updates the widget's position and size.
+	SetGeometry(rect layout.Rect)
+
+	// OnKey handles a keyboard event. Returns true if the event was consumed.
+	OnKey(key KeyEvent) bool
+	// OnMouse handles a mouse event. Returns true if the event was consumed.
+	OnMouse(mouse MouseEvent) bool
+	// Focusable reports whether this widget can receive keyboard focus.
+	Focusable() bool
 }
 
 // Config holds optional configuration shared across all widget types.
@@ -92,4 +105,10 @@ func newConfig(opts []Option) Config {
 		opt(&cfg)
 	}
 	return cfg
+}
+
+// HitTest reports whether point (x, y) falls inside rect.
+func HitTest(rect layout.Rect, x, y int) bool {
+	return x >= rect.X && x < rect.X+rect.Width &&
+		y >= rect.Y && y < rect.Y+rect.Height
 }

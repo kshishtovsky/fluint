@@ -9,6 +9,7 @@ internal/platform   — OS-специфичный код за интерфейс
 core/buffer         — Клеточная сетка (rune + style + attrs), front/back буфер
 core/diff           — Back vs front → минимальный changeset
 core/loop           — Frame scheduler, delta-time, event bus
+core/router         — Маршрутизация событий, управление фокусом, хит-тестинг
 render/ansi         — Changeset → ANSI bytes, synchronized output (mode 2026)
 anim                — Easing, tween/timeline, delta-time интерполяция
 layout              — Flexbox-подобная система компоновки (ADR-0001)
@@ -22,9 +23,9 @@ examples            — Демо, VFX-витрины
 ```
 examples → widgets → layout → core/buffer ← core/diff ← render/ansi
                 ↘ anim ↗          ↑
-                              core/loop
-                                  ↑
-                          internal/term ← internal/platform
+              core/router      core/loop
+                  ↑               ↑
+                  └─────── internal/term ← internal/platform
 ```
 
 Циклические импорты **запрещены**.

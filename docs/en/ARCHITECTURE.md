@@ -9,6 +9,7 @@ internal/platform   — OS-specific code behind build tags
 core/buffer         — Cell grid (rune + style + attrs), front/back buffer
 core/diff           — Back vs front → minimal changeset
 core/loop           — Frame scheduler, delta-time, event bus
+core/router         — Event routing, focus management, hit-testing
 render/ansi         — Changeset → ANSI bytes, synchronized output (mode 2026)
 anim                — Easing, tween/timeline, delta-time interpolation
 layout              — Flexbox-like layout system (ADR-0001)
@@ -22,9 +23,9 @@ examples            — Demos, VFX showcases
 ```
 examples → widgets → layout → core/buffer ← core/diff ← render/ansi
                 ↘ anim ↗          ↑
-                              core/loop
-                                  ↑
-                          internal/term ← internal/platform
+              core/router      core/loop
+                  ↑               ↑
+                  └─────── internal/term ← internal/platform
 ```
 
 Cyclic imports are **forbidden**.
