@@ -53,15 +53,15 @@ func TestCardRoundedBorderWithShadow(t *testing.T) {
 		t.Errorf("row 4 missing bottom-right corner: %q", dump[4])
 	}
 
-	// Shadow: row 5 should have shadow characters at x+1.
+	// Shadow: row 5 should have half-block shadow at x+1.
 	if len(dump) > 5 {
 		// Shadow at (1,5) — offset (1,1) from card bottom.
 		c := buf.GetCell(1, 5)
-		if c.Rune != '░' {
-			t.Errorf("shadow cell(1,5): got %q, want ░", c.Rune)
+		if c.Rune != style.ShadowBottom {
+			t.Errorf("shadow cell(1,5): got %q, want %c", c.Rune, style.ShadowBottom)
 		}
-		if c.Bg != uint32(style.ShadowColor) {
-			t.Errorf("shadow cell(1,5) Bg: got 0x%06X, want 0x%06X", c.Bg, style.ShadowColor)
+		if c.Fg != uint32(style.ShadowColor) {
+			t.Errorf("shadow cell(1,5) Fg: got 0x%06X, want 0x%06X", c.Fg, style.ShadowColor)
 		}
 	}
 
@@ -107,13 +107,13 @@ func TestCardShadowDoesNotOverlapContent(t *testing.T) {
 
 	// Shadow should be at (1,4) — below top card, right of its left edge.
 	c = buf.GetCell(1, 4)
-	if c.Rune != '░' {
-		t.Errorf("shadow(1,4): got %q, want ░", c.Rune)
+	if c.Rune != style.ShadowBottom {
+		t.Errorf("shadow(1,4): got %q, want %c", c.Rune, style.ShadowBottom)
 	}
 
-	// Shadow must NOT be inside the top card rect (e.g. at (1,1) should be border/bg, not ░).
+	// Shadow must NOT be inside the top card rect (e.g. at (1,1) should be border/bg, not shadow).
 	c = buf.GetCell(1, 1)
-	if c.Rune == '░' {
+	if c.Rune == style.ShadowBottom {
 		t.Errorf("shadow leaked inside card at (1,1): got ░")
 	}
 }

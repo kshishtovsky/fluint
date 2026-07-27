@@ -31,7 +31,11 @@ const (
 	Teal        Color = 0x00008080
 	Purple      Color = 0x00800080
 	Brown       Color = 0x008B4513
-	ShadowColor Color = 0x001A1A1A // default shadow — very dark gray
+	ShadowColor Color = 0x0A0A0A // default shadow — near-black, barely visible
+
+	// Shadow runes — half-blocks for thinner shadows.
+	ShadowBottom rune = '▀' // upper half block — bottom shadow (top half colored)
+	ShadowRight  rune = '▌' // left half block — right shadow (left half colored)
 )
 
 // BorderStyle selects the border drawing mode.

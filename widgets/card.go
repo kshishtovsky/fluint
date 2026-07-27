@@ -55,24 +55,28 @@ func (c *Card) Render(ctx viewport.RenderCtx, rect layout.Rect) {
 	}
 
 	// ── Shadow (only in areas NOT covered by the card) ──────────────
+	// Uses half-block runes for a thinner, subtler shadow:
+	//   ▀ (upper half block) — bottom shadow: colored top half, bg bottom half
+	//   ▌ (left half block)  — right shadow: colored left half, bg right half
 	if c.config.style.HasShadow() {
 		sh := c.config.style.ShadowCfg()
-		shadowCell := buffer.Cell{Rune: '░', Bg: uint32(sh.Color)}
 
-		// Bottom strip: below the card, offset by sh.OffsetY.
+		// Bottom strip: ▀ with shadow Fg, page Bg.
 		if sh.OffsetY > 0 {
+			bottomCell := buffer.Cell{Rune: style.ShadowBottom, Fg: uint32(sh.Color)}
 			for y := sy + rect.Height; y < sy+rect.Height+sh.OffsetY; y++ {
 				for x := sx + sh.OffsetX; x < sx+rect.Width+sh.OffsetX; x++ {
-					ctx.Buf.SetCell(x, y, shadowCell)
+					ctx.Buf.SetCell(x, y, bottomCell)
 				}
 			}
 		}
 
-		// Right strip: right of the card, offset by sh.OffsetX.
+		// Right strip: ▌ with shadow Fg, page Bg.
 		if sh.OffsetX > 0 {
+			rightCell := buffer.Cell{Rune: style.ShadowRight, Fg: uint32(sh.Color)}
 			for y := sy + sh.OffsetY; y < sy+rect.Height+sh.OffsetY; y++ {
 				for x := sx + rect.Width; x < sx+rect.Width+sh.OffsetX; x++ {
-					ctx.Buf.SetCell(x, y, shadowCell)
+					ctx.Buf.SetCell(x, y, rightCell)
 				}
 			}
 		}
