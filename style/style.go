@@ -32,10 +32,7 @@ const (
 	Purple      Color = 0x00800080
 	Brown       Color = 0x008B4513
 	ShadowColor Color = 0x0A0A0A // default shadow — near-black, barely visible
-
-	// Shadow layer runes — 2-layer shade gradient.
-	ShadowLayer1 rune = '▒' // U+2592 medium shade — adjacent to card (dense)
-	ShadowLayer2 rune = '░' // U+2591 light shade — one cell out (fading)
+	ShadowRune  rune = '▒'       // U+2592 medium shade — single-layer shadow
 )
 
 // BorderStyle selects the border drawing mode.

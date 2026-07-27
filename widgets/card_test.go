@@ -34,40 +34,27 @@ func TestCard2LayerShadow(t *testing.T) {
 		t.Errorf("child(0,0): got %q, want H", c.Rune)
 	}
 
-	// Layer 1: ▒ at right column (10), rows 0-4.
-	for y := 0; y < 5; y++ {
+	// ▒ at right column (10), rows 0-5.
+	for y := 0; y <= 5; y++ {
 		c := buf.GetCell(10, y)
-		if c.Rune != style.ShadowLayer1 {
-			t.Errorf("L1 right(10,%d): got %q, want %c", y, c.Rune, style.ShadowLayer1)
+		if c.Rune != style.ShadowRune {
+			t.Errorf("right(10,%d): got %q, want %c", y, c.Rune, style.ShadowRune)
+		}
+		if c.Fg != uint32(style.ShadowColor) {
+			t.Errorf("right(10,%d) Fg: 0x%06X", y, c.Fg)
 		}
 	}
 
-	// Layer 1: ▒ at bottom row (5), cols 0-9.
+	// ▒ at bottom row (5), cols 0-9.
 	for x := 0; x < 10; x++ {
 		c := buf.GetCell(x, 5)
-		if c.Rune != style.ShadowLayer1 {
-			t.Errorf("L1 bottom(%d,5): got %q, want %c", x, c.Rune, style.ShadowLayer1)
-		}
-	}
-
-	// Layer 2: ░ at right+1 column (11), rows 0-5.
-	for y := 0; y <= 5; y++ {
-		c := buf.GetCell(11, y)
-		if c.Rune != style.ShadowLayer2 {
-			t.Errorf("L2 right(11,%d): got %q, want %c", y, c.Rune, style.ShadowLayer2)
-		}
-	}
-
-	// Layer 2: ░ at bottom+1 row (6), cols 1-10.
-	for x := 1; x <= 10; x++ {
-		c := buf.GetCell(x, 6)
-		if c.Rune != style.ShadowLayer2 {
-			t.Errorf("L2 bottom(%d,6): got %q, want %c", x, c.Rune, style.ShadowLayer2)
+		if c.Rune != style.ShadowRune {
+			t.Errorf("bottom(%d,5): got %q, want %c", x, c.Rune, style.ShadowRune)
 		}
 	}
 
 	// Shadow must NOT be inside card.
-	if c := buf.GetCell(1, 1); c.Rune == style.ShadowLayer1 || c.Rune == style.ShadowLayer2 {
+	if c := buf.GetCell(1, 1); c.Rune == style.ShadowRune {
 		t.Errorf("shadow leaked inside card at (1,1): got %c", c.Rune)
 	}
 
@@ -106,21 +93,15 @@ func TestCardShadowDoesNotOverlapContent(t *testing.T) {
 		t.Errorf("bottom card(0,8): got %q, want B (child content)", c.Rune)
 	}
 
-	// Top card layer 1: ▒ at (10, 1).
+	// Top card shadow: ▒ at (10, 1).
 	c = buf.GetCell(10, 1)
-	if c.Rune != style.ShadowLayer1 {
-		t.Errorf("L1(10,1): got %q, want %c", c.Rune, style.ShadowLayer1)
-	}
-
-	// Top card layer 2: ░ at (11, 1).
-	c = buf.GetCell(11, 1)
-	if c.Rune != style.ShadowLayer2 {
-		t.Errorf("L2(11,1): got %q, want %c", c.Rune, style.ShadowLayer2)
+	if c.Rune != style.ShadowRune {
+		t.Errorf("shadow(10,1): got %q, want %c", c.Rune, style.ShadowRune)
 	}
 
 	// Shadow must NOT be inside the card.
 	c = buf.GetCell(1, 1)
-	if c.Rune == style.ShadowLayer1 || c.Rune == style.ShadowLayer2 {
+	if c.Rune == style.ShadowRune {
 		t.Errorf("shadow leaked inside card at (1,1): got %c", c.Rune)
 	}
 }
