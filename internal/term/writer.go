@@ -46,23 +46,28 @@ func (w *Writer) Grow(minCap int) {
 }
 
 // WriteByte appends a single byte to the buffer.
-func (w *Writer) WriteByte(b byte) {
+func (w *Writer) WriteByte(b byte) error {
 	w.ensureSpace(1)
 	w.buf[w.n] = b
 	w.n++
+	return nil
 }
 
 // Write appends p to the buffer.
-func (w *Writer) Write(p []byte) {
+func (w *Writer) Write(p []byte) (int, error) {
 	w.ensureSpace(len(p))
-	w.n += copy(w.buf[w.n:], p)
+	n := copy(w.buf[w.n:], p)
+	w.n += n
+	return n, nil
 }
 
 // WriteString appends s to the buffer without allocating.
 // Go's copy builtin accepts string as source for []byte destination.
-func (w *Writer) WriteString(s string) {
+func (w *Writer) WriteString(s string) (int, error) {
 	w.ensureSpace(len(s))
-	w.n += copy(w.buf[w.n:], s)
+	n := copy(w.buf[w.n:], s)
+	w.n += n
+	return n, nil
 }
 
 // ensureSpace grows the buffer if needed. This should not fire during
