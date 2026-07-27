@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Package `core/buffer`: Data-Oriented 2D Cell grid (`Buffer`) with 16-byte cache-aligned `Cell` layout, zero-allocation `Clear()`, and safe coordinate clipping.
+- Package `core/diff`: Minimal changeset diff engine (`Differ`) with zero-allocation steady state execution and 1D CPU cache-optimized cell comparisons.
 - GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml`) for Go testing with race detector, `golangci-lint`, and SonarCloud analysis on push/PR to `main`.
 - Automated GitHub Release pipeline (`.github/workflows/release.yml`) triggered on version tag pushes (`v*`).
 - Hybrid terminal capabilities detection (`Detect()` and `DetectActive()`) in `internal/term/caps.go` supporting DECRQM mode 2026 synchronized output and Kitty keyboard protocol according to ADR-0002.
