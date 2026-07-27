@@ -136,26 +136,24 @@ func TestRow_GrowEqual(t *testing.T) {
 	}
 	results := measureAll(c, 30, 4)
 
-	if got, want := len(results), 6; got != want {
-		t.Fatalf("len(results) = %d, want %d", got, want)
-	}
-	children := childRects(t, c, results)
-
-	var sum int
-	for _, r := range children {
-		sum += r.Width
-	}
-	if sum != 30 {
-		t.Errorf("sum widths = %d, want 30", sum)
-	}
-	for i, r := range children {
-		if r.Width != 10 {
-			t.Errorf("child[%d].Width = %d, want 10", i, r.Width)
+		if got, want := len(results), 6; got != want {
+			t.Fatalf("len(results) = %d, want %d", got, want)
 		}
-	}
-}
+		children := childRects(t, c, results)
 
-func TestRow_GrowWeighted(t *testing.T) {
+		var sum int
+		for _, r := range children {
+			sum += r.Width
+		}
+		if sum != 30 {
+			t.Errorf("sum widths = %d, want 30", sum)
+		}
+		for i := range int32(len(children)) {
+				if children[i].Width != 10 {
+					t.Errorf("child[%d].Width = %d, want 10", i, children[i].Width)
+				}
+			}
+		}
 	t.Parallel()
 
 	c := &Container{

@@ -218,45 +218,43 @@ func (c *Container) measure(main, cross int, results []Rect, transposed bool) []
 	pos := 0
 	for i := 0; i < n; i++ {
 		ch := &c.Children[i]
-		size := sizes[i]
+				size := sizes[i]
 
-		// Honour the invariant on the last child: give it whatever
-		// slack is left so totals match exactly. We adjust the size in
-		// place so the position stride stays consistent.
-		if i == n-1 {
-			residual := main - (pos + size)
-			if residual > 0 {
-				size += residual
-			} else if residual < 0 && size+residual >= 0 {
-				size += residual
-			} else if size+residual < 0 {
-				size = 0
+				// Honour the invariant on the last child: give it whatever
+				// slack is left so totals match exactly. We adjust the size
+				// in place so the position stride stays consistent.
+				switch {
+				case main-(pos+size) > 0:
+					size += main - (pos + size)
+				case main-(pos+size) < 0 && size+(main-(pos+size)) >= 0:
+					size += main - (pos + size)
+				case size+(main-(pos+size)) < 0:
+					size = 0
+				}
+				sizes[i] = size
+
+				var rect Rect
+				if transposed {
+					rect = Rect{X: pos, Y: 0, Width: size, Height: cross}
+				} else {
+					rect = Rect{X: 0, Y: pos, Width: cross, Height: size}
+				}
+				pos += size
+
+				results = results[:len(results)+1]
+				results[len(results)-1] = rect
+
+				if ch.Node != nil && size > 0 && cross > 0 {
+					results = ch.Node.Measure(rect.Width, rect.Height, results)
+				}
 			}
-			sizes[i] = size
+
+			return results
 		}
 
-		var rect Rect
-		if transposed {
-			rect = Rect{X: pos, Y: 0, Width: size, Height: cross}
-		} else {
-			rect = Rect{X: 0, Y: pos, Width: cross, Height: size}
-		}
-		pos += size
-
-		results = results[:len(results)+1]
-		results[len(results)-1] = rect
-
-		if ch.Node != nil && size > 0 && cross > 0 {
-			results = ch.Node.Measure(rect.Width, rect.Height, results)
-		}
-	}
-
-	return results
-}
-
-// measureSlow is the heap-backed fallback for containers wider than the
-// stack scratch buffer. It mirrors measure exactly.
-func (c *Container) measureSlow(main, cross int, results []Rect, transposed bool, sizes []int) []Rect {
+		// measureSlow is the heap-backed fallback for containers wider than the
+		// stack scratch buffer. It mirrors measure exactly.
+		func (c *Container) measureSlow(main, cross int, results []Rect, transposed bool, sizes []int) []Rect {
 	n := len(c.Children)
 	if n == 0 {
 		return results
@@ -328,36 +326,37 @@ func (c *Container) measureSlow(main, cross int, results []Rect, transposed bool
 	pos := 0
 	for i := 0; i < n; i++ {
 		ch := &c.Children[i]
-		size := sizes[i]
-		if i == n-1 {
-			residual := main - (pos + size)
-			if residual > 0 {
-				size += residual
-			} else if residual < 0 && size+residual >= 0 {
-				size += residual
-			} else if size+residual < 0 {
-				size = 0
+				size := sizes[i]
+
+				// Mirror of the invariant fix in measure: keep the residual
+				// adjustment explicit so the position stride stays consistent.
+				switch {
+				case main-(pos+size) > 0:
+					size += main - (pos + size)
+				case main-(pos+size) < 0 && size+(main-(pos+size)) >= 0:
+					size += main - (pos + size)
+				case size+(main-(pos+size)) < 0:
+					size = 0
+				}
+				sizes[i] = size
+
+				var rect Rect
+				if transposed {
+					rect = Rect{X: pos, Y: 0, Width: size, Height: cross}
+				} else {
+					rect = Rect{X: 0, Y: pos, Width: cross, Height: size}
+				}
+				pos += size
+
+				results = results[:len(results)+1]
+				results[len(results)-1] = rect
+
+				if ch.Node != nil && size > 0 && cross > 0 {
+					results = ch.Node.Measure(rect.Width, rect.Height, results)
+				}
 			}
-			sizes[i] = size
+			return results
 		}
-
-		var rect Rect
-		if transposed {
-			rect = Rect{X: pos, Y: 0, Width: size, Height: cross}
-		} else {
-			rect = Rect{X: 0, Y: pos, Width: cross, Height: size}
-		}
-		pos += size
-
-		results = results[:len(results)+1]
-		results[len(results)-1] = rect
-
-		if ch.Node != nil && size > 0 && cross > 0 {
-			results = ch.Node.Measure(rect.Width, rect.Height, results)
-		}
-	}
-	return results
-}
 
 // Leaf is a leaf node that occupies exactly its available rect.
 // It produces exactly one Rect per Measure call.
