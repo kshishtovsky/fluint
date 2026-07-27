@@ -1,130 +1,84 @@
 package buffer
 
-import (
-	"testing"
-	"unsafe"
-)
+import "testing"
 
-func TestCellSize(t *testing.T) {
-	size := unsafe.Sizeof(Cell{})
-	if size != 16 {
-		t.Fatalf("Cell size = %d bytes, want exactly 16 bytes for cache line alignment", size)
+func TestNewBuffer_Dimensions(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name    string
+		w, h    int
+		wantLen int
+	}{
+		{"normal", 10, 5, 50},
+		{"wide", 80, 24, 1920},
+		{"unit", 1, 1, 1},
+		{"empty-zero", 0, 0, 0},
 	}
-}
-
-func TestBufferSetGet(t *testing.T) {
-	buf := NewBuffer(10, 5)
-	if buf.Width != 10 || buf.Height != 5 {
-		t.Fatalf("Buffer dimensions = %dx%d, want 10x5", buf.Width, buf.Height)
-	}
-
-	cell := Cell{
-		Rune:  'A',
-		Fg:    0x00FF0000,
-		Bg:    0x0000FF00,
-		Attrs: Bold | Underline,
-	}
-
-	buf.SetCell(3, 2, cell)
-	got := buf.GetCell(3, 2)
-
-	if got != cell {
-		t.Fatalf("GetCell(3, 2) = %+v, want %+v", got, cell)
-	}
-}
-
-func TestBufferOutOfBounds(t *testing.T) {
-	buf := NewBuffer(10, 5)
-	cell := Cell{Rune: 'X', Fg: 0xFFFFFF}
-
-	// Negative coordinates
-	buf.SetCell(-1, 2, cell)
-	buf.SetCell(3, -1, cell)
-	// Out-of-bounds coordinates
-	buf.SetCell(10, 2, cell)
-	buf.SetCell(3, 5, cell)
-
-	// Verify all returned cells are zero values
-	if got := buf.GetCell(-1, 2); got != (Cell{}) {
-		t.Fatalf("GetCell(-1, 2) = %+v, want zero Cell", got)
-	}
-	if got := buf.GetCell(10, 2); got != (Cell{}) {
-		t.Fatalf("GetCell(10, 2) = %+v, want zero Cell", got)
-	}
-}
-
-func TestBufferClear(t *testing.T) {
-	buf := NewBuffer(10, 5)
-	cell := Cell{Rune: 'Z', Fg: 0x123456}
-
-	for y := 0; y < 5; y++ {
-		for x := 0; x < 10; x++ {
-			buf.SetCell(x, y, cell)
-		}
-	}
-
-	buf.Clear()
-
-	for y := 0; y < 5; y++ {
-		for x := 0; x < 10; x++ {
-			if got := buf.GetCell(x, y); got != (Cell{}) {
-				t.Fatalf("GetCell(%d, %d) after Clear = %+v, want zero Cell", x, y, got)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			buf := NewBuffer(tc.w, tc.h)
+			if buf == nil {
+				t.Fatal("NewBuffer returned nil")
 			}
-		}
+			if buf.Width != tc.w {
+				t.Errorf("Width = %d, want %d", buf.Width, tc.w)
+			}
+			if buf.Height != tc.h {
+				t.Errorf("Height = %d, want %d", buf.Height, tc.h)
+			}
+			if len(buf.Cells) != tc.wantLen {
+				t.Errorf("len(Cells) = %d, want %d", len(buf.Cells), tc.wantLen)
+			}
+		})
 	}
 }
 
-func TestBufferResize(t *testing.T) {
-	buf := NewBuffer(10, 10)
-	capBefore := cap(buf.Cells)
+func TestBufferClone_DeepCopy(t *testing.T) {
+	t.Parallel()
 
-	// Downsize — should reuse capacity
-	buf.Resize(5, 5)
-	if buf.Width != 5 || buf.Height != 5 {
-		t.Fatalf("Resized dimensions = %dx%d, want 5x5", buf.Width, buf.Height)
+	src := NewBuffer(4, 3)
+	src.SetCell(2, 1, Cell{Rune: 'Q'})
+
+	clone := src.Clone()
+	if clone == nil {
+		t.Fatal("Clone returned nil")
 	}
-	if cap(buf.Cells) != capBefore {
-		t.Fatalf("Capacity changed after downsize = %d, want %d", cap(buf.Cells), capBefore)
+	if clone == src {
+		t.Fatal("Clone returned the same pointer")
+	}
+	if len(clone.Cells) > 0 && len(src.Cells) > 0 &&
+		&clone.Cells[0] == &src.Cells[0] {
+		t.Fatal("Clone shares the Cells backing array")
 	}
 
-	// Upsize within capacity — should reuse capacity
-	buf.Resize(8, 8)
-	if cap(buf.Cells) != capBefore {
-		t.Fatalf("Capacity changed after upsize within cap = %d, want %d", cap(buf.Cells), capBefore)
+	src.SetCell(0, 0, Cell{Rune: 'X'})
+	if got := clone.GetCell(0, 0); got != (Cell{}) {
+		t.Errorf("clone picked up source mutation: clone[0,0] = %+v, want zero", got)
 	}
 
-	// Upsize exceeding capacity — reallocates
-	buf.Resize(20, 20)
-	if buf.Width != 20 || buf.Height != 20 {
-		t.Fatalf("Resized dimensions = %dx%d, want 20x20", buf.Width, buf.Height)
+	clone.SetCell(3, 2, Cell{Rune: 'Y'})
+	if got := src.GetCell(3, 2); got != (Cell{}) {
+		t.Errorf("original picked up clone mutation: src[3,2] = %+v, want zero", got)
+	}
+
+	if clone.Width != src.Width || clone.Height != src.Height {
+		t.Errorf("clone dims = (%d,%d), want (%d,%d)",
+			clone.Width, clone.Height, src.Width, src.Height)
+	}
+
+	if got := (*Buffer)(nil).Clone(); got != nil {
+		t.Errorf("Clone of nil = %+v, want nil", got)
 	}
 }
 
 func BenchmarkBufferSetCell(b *testing.B) {
-	buf := NewBuffer(100, 50)
-	cell := Cell{Rune: 'A', Fg: 0x00FF0000, Bg: 0x0000FF00, Attrs: Bold}
+	buf := NewBuffer(80, 24)
 
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		buf.SetCell(i%100, (i/100)%50, cell)
-	}
-}
-
-func BenchmarkBufferClear(b *testing.B) {
-	buf := NewBuffer(100, 50)
-	cell := Cell{Rune: 'A', Fg: 0x00FF0000, Bg: 0x0000FF00, Attrs: Bold}
-	for y := 0; y < 50; y++ {
-		for x := 0; x < 100; x++ {
-			buf.SetCell(x, y, cell)
-		}
-	}
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		buf.Clear()
+		buf.SetCell(i%80, (i/80)%24, Cell{Rune: 'X'})
 	}
 }

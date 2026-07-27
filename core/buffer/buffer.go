@@ -37,15 +37,15 @@ func NewBuffer(width, height int) *Buffer {
 	if width < 0 {
 		width = 0
 	}
-	if height < 0 {
-		height = 0
+	// NewBuffer allocates a Buffer of width×height cells, all set to the
+	// zero-value Cell (space rune, default colors).
+	func NewBuffer(width, height int) *Buffer {
+		return &Buffer{
+			Width:  width,
+			Height: height,
+			Cells:   make([]Cell, width*height),
+		}
 	}
-	return &Buffer{
-		Width:  width,
-		Height: height,
-		Cells:  make([]Cell, width*height),
-	}
-}
 
 // SetCell sets the Cell at coordinate (x, y).
 //
