@@ -120,6 +120,84 @@ func TestAccessors(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// Border, Padding, Shadow
+// ---------------------------------------------------------------------------
+
+func TestBorder(t *testing.T) {
+	t.Parallel()
+
+	s := New().SolidBorder(Red)
+	if s.Border() != BorderSolid {
+		t.Errorf("Border: got %d, want BorderSolid", s.Border())
+	}
+	if s.BorderColor() != Red {
+		t.Errorf("BorderColor: got 0x%06X, want Red", s.BorderColor())
+	}
+	if !s.HasBorder() {
+		t.Error("HasBorder should be true")
+	}
+
+	s2 := s.RoundedBorder(Blue)
+	if s2.Border() != BorderRounded {
+		t.Errorf("RoundedBorder: got %d, want BorderRounded", s2.Border())
+	}
+	// Original unchanged.
+	if s.Border() != BorderSolid {
+		t.Error("RoundedBorder mutated receiver")
+	}
+
+	s3 := s2.NoBorder()
+	if s3.HasBorder() {
+		t.Error("NoBorder should clear border")
+	}
+}
+
+func TestPadding(t *testing.T) {
+	t.Parallel()
+
+	s := New().Padding(2, 1)
+	if s.PaddingX() != 2 {
+		t.Errorf("PaddingX: got %d, want 2", s.PaddingX())
+	}
+	if s.PaddingY() != 1 {
+		t.Errorf("PaddingY: got %d, want 1", s.PaddingY())
+	}
+}
+
+func TestShadow(t *testing.T) {
+	t.Parallel()
+
+	s := New().Shadow(1, 2, ShadowColor)
+	if !s.HasShadow() {
+		t.Error("HasShadow should be true")
+	}
+	sh := s.ShadowCfg()
+	if sh.OffsetX != 1 || sh.OffsetY != 2 || sh.Color != ShadowColor {
+		t.Errorf("ShadowCfg: got %+v", sh)
+	}
+
+	s2 := s.NoShadow()
+	if s2.HasShadow() {
+		t.Error("NoShadow should clear shadow")
+	}
+}
+
+func TestBorderRunes(t *testing.T) {
+	t.Parallel()
+
+	// Verify rune constants are correct.
+	if BorderSolidTL != '┌' {
+		t.Errorf("BorderSolidTL: got %c, want ┌", BorderSolidTL)
+	}
+	if BorderRoundedTL != '╭' {
+		t.Errorf("BorderRoundedTL: got %c, want ╭", BorderRoundedTL)
+	}
+	if BorderRoundedBR != '╯' {
+		t.Errorf("BorderRoundedBR: got %c, want ╯", BorderRoundedBR)
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Benchmarks
 // ---------------------------------------------------------------------------
 
@@ -138,5 +216,13 @@ func BenchmarkApply(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = s.Apply(cell)
+	}
+}
+
+func BenchmarkStyleChainWithBorder(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = New().Foreground(White).Background(Black).RoundedBorder(Green).Padding(1, 0).Shadow(1, 1, ShadowColor)
 	}
 }

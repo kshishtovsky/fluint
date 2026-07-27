@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.9.0] - 2026-07-28
+
+### Added
+- Package `style`: `BorderStyle` type (`BorderNone`, `BorderSolid`, `BorderRounded`), `ShadowStyle` struct, border/shadow/padding fields on `Style`. Builder methods: `SolidBorder(c)`, `RoundedBorder(c)`, `NoBorder()`, `Padding(x, y)`, `Shadow(offsetX, offsetY, color)`, `NoShadow()`. Border rune constants (`BorderSolidTL`, `BorderRoundedTL`, etc.) as package-level constants for zero-alloc rendering.
+- Package `widgets`: `Card` container widget — draws rounded/solid border, optional drop shadow (`░`), interior padding, and delegates rendering/events to a child `Node`. Shadow drawn behind card, border drawn 1-cell thick, child rendered inside border+padding area. `OnMouse` forwards only clicks inside the inner area. Zero-alloc render (~580 ns/op).
+- Example `examples/ui_kit`: Chat UI concept with `ThinkingCardStyle` (dim border, muted bg) and `AnswerCardStyle` (cyan border, normal bg) demonstrating visual separation of content blocks.
+
 ## [v0.8.0] - 2026-07-28
 
 ### Added
