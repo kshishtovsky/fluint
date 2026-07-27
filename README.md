@@ -1,9 +1,11 @@
 ![Fluint](docs/repo_image.jpg)
 
+<p align="center">
+
 # Fluint — High-Performance Go TUI Engine
 
-<p align="center">
-  🇬🇧 <strong>English</strong> | 🇷🇺 <a href="docs/ru/README.md">Русский</a> | 🇨🇳 <a href="docs/zh/README.md">中文</a>
+🇬🇧 <strong>English</strong> | 🇷🇺 <a href="docs/ru/README.md">Русский</a> | 🇨🇳 <a href="docs/zh/README.md">中文</a>
+
 </p>
 
 ---
@@ -19,6 +21,7 @@ An open-source Terminal User Interface (TUI) engine for Go built **from scratch*
 ## Documentation
 
 Full documentation is maintained in 3 mirrored languages:
+
 - 🇬🇧 [English Documentation](docs/en/)
 - 🇷🇺 [Русская документация](docs/ru/)
 - 🇨🇳 [中文文档](docs/zh/)
