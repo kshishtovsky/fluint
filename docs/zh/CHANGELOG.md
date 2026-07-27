@@ -5,6 +5,13 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
+## [v0.8.0] - 2026-07-28
+
+### 新增
+- `widgets` 包：`List` 组件 — 可滚动虚拟化列表，支持自动滚动、反色选中高亮、Up/Down/Enter 键盘导航和鼠标左键行选择。仅渲染可见行。`WithOnSelect` 回调选项。渲染零分配（1000 项约 800 ns/op）。
+- `widgets` 包：`TextInput` 组件 — 单行文本编辑器，使用 `[]rune` 存储、光标定位、长文本水平滚动和键盘编辑（可打印字符、Backspace、Delete、Left、Right、Home、End）。`WithOnChange` 回调选项。光标以反色显示。渲染零分配（约 50 ns/op）。
+- 示例 `examples/ui_kit`：全面演示所有组件（Text、Button、List、TextInput）、布局引擎、样式系统、动画、Router 的 Tab 切换、键盘导航和模拟鼠标点击。运行脚本化事件序列并实时显示缓冲区快照。
+
 ## [v0.7.0] - 2026-07-28
 
 ### 新增
