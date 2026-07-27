@@ -5,7 +5,7 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
-## [未发布]
+## [v0.1.0] - 2026-07-27
 
 ### 新增
 - 项目初始化与基础架构搭建。
