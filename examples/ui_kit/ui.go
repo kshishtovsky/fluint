@@ -131,7 +131,7 @@ func renderUI(ctx viewport.RenderCtx, ui *uiState, w, h int) {
 			Width:  rMessages.Width - 2,
 			Height: msgH,
 		})
-		msgY += msgH + 1 // +1 gap between messages
+		msgY += msgH + 3 // +3 gap between messages
 	}
 
 	// Input card — full width at bottom.
