@@ -5,6 +5,13 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
+## [v0.2.0] - 2026-07-28
+
+### 新增
+- `anim` 包：缓动函数包 (`EaseFunc`)，提供 9 个命名曲线 — `Linear`、`InQuad`、`OutQuad`、`InOutQuad`、`InCubic`、`OutCubic`、`InOutCubic`、`OutBounce`、`OutElastic`，基于包级函数（非闭包）实现热路径零分配调用。仅 `OutElastic` 使用 `math.Pow`；其余均为纯算术运算。
+- `core/buffer` 包：`Buffer.SetSubCellY(x, y, ySub int, color uint32)` 方法，使用 Unicode 半块字形（`▀` U+2580、`▄` U+2584）实现垂直子像素渲染。通过复用现有 `Cell.Fg`/`Cell.Bg` 字段，在无需额外内存的情况下将垂直分辨率翻倍。
+- ADR-0006：子像素渲染与缓动函数架构决策记录。
+
 ## [v0.1.1] - 2026-07-27
 
 ### 新增
