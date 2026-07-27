@@ -36,20 +36,15 @@ func childRects(t *testing.T, c *Container, results []Rect) []Rect {
 	t.Helper()
 	out := make([]Rect, 0, len(c.Children))
 	pos := 0
-	for {
-		if pos >= len(results) {
-			break
-		}
+	for i := 0; i < len(c.Children) && pos < len(results); i++ {
 		out = append(out, results[pos])
 		pos++
 		// Skip the recursion contribution. A Leaf contributes 1 rect;
 		// a Container contributes its own len(Children) + sum of its
 		// own recursion contributions. We approximate by walking the
 		// underlying Children slice.
-		if pos-1 < len(c.Children) {
-			ch := c.Children[pos-1].Node
-			pos += contribution(ch)
-		}
+		ch := c.Children[i].Node
+		pos += contribution(ch)
 	}
 	return out
 }
@@ -136,24 +131,26 @@ func TestRow_GrowEqual(t *testing.T) {
 	}
 	results := measureAll(c, 30, 4)
 
-		if got, want := len(results), 6; got != want {
-			t.Fatalf("len(results) = %d, want %d", got, want)
-		}
-		children := childRects(t, c, results)
+	if got, want := len(results), 6; got != want {
+		t.Fatalf("len(results) = %d, want %d", got, want)
+	}
+	children := childRects(t, c, results)
 
-		var sum int
-		for _, r := range children {
-			sum += r.Width
+	var sum int
+	for _, r := range children {
+		sum += r.Width
+	}
+	if sum != 30 {
+		t.Errorf("sum widths = %d, want 30", sum)
+	}
+	for i := range int32(len(children)) {
+		if children[i].Width != 10 {
+			t.Errorf("child[%d].Width = %d, want 10", i, children[i].Width)
 		}
-		if sum != 30 {
-			t.Errorf("sum widths = %d, want 30", sum)
-		}
-		for i := range int32(len(children)) {
-				if children[i].Width != 10 {
-					t.Errorf("child[%d].Width = %d, want 10", i, children[i].Width)
-				}
-			}
-		}
+	}
+}
+
+func TestRow_GrowProportional(t *testing.T) {
 	t.Parallel()
 
 	c := &Container{
