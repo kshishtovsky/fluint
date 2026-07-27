@@ -31,7 +31,7 @@ func TestCardRoundedBorderWithShadow(t *testing.T) {
 	buf := buffer.NewBuffer(12, 7)
 	card.Render(viewport.RenderCtx{Buf: buf}, layout.Rect{X: 0, Y: 0, Width: 10, Height: 5})
 
-	// All four corners must be preserved.
+	// All four border corners must be intact (shadow is outside).
 	if c := buf.GetCell(0, 0); c.Rune != '╭' {
 		t.Errorf("TL(0,0): got %q, want ╭", c.Rune)
 	}
@@ -41,38 +41,49 @@ func TestCardRoundedBorderWithShadow(t *testing.T) {
 	if c := buf.GetCell(0, 4); c.Rune != '╰' {
 		t.Errorf("BL(0,4): got %q, want ╰", c.Rune)
 	}
-	// Bottom-right: ▒ (shadow corner join replaces ╯).
-	if c := buf.GetCell(9, 4); c.Rune != style.ShadowCorner {
-		t.Errorf("BR(9,4): got %q, want %c", c.Rune, style.ShadowCorner)
+	if c := buf.GetCell(9, 4); c.Rune != '╯' {
+		t.Errorf("BR(9,4): got %q, want ╯", c.Rune)
 	}
 
-	// Top border ─ preserved (no shadow on top row).
+	// Top border ─ intact.
 	if c := buf.GetCell(5, 0); c.Rune != '─' {
 		t.Errorf("top(5,0): got %q, want ─", c.Rune)
 	}
-
-	// Left border │ preserved (no shadow on left column).
+	// Left border │ intact.
 	if c := buf.GetCell(0, 2); c.Rune != '│' {
 		t.Errorf("left(0,2): got %q, want │", c.Rune)
 	}
+	// Right border │ intact.
+	if c := buf.GetCell(9, 2); c.Rune != '│' {
+		t.Errorf("right(9,2): got %q, want │", c.Rune)
+	}
+	// Bottom border ─ intact.
+	if c := buf.GetCell(5, 4); c.Rune != '─' {
+		t.Errorf("bottom(5,4): got %q, want ─", c.Rune)
+	}
 
-	// Right interior (col 9, rows 1-3): ▐.
-	for y := 1; y <= 3; y++ {
-		c := buf.GetCell(9, y)
+	// Shadow outside: ▐ at column 10, rows 0-4.
+	for y := 0; y < 5; y++ {
+		c := buf.GetCell(10, y)
 		if c.Rune != style.ShadowRight {
-			t.Errorf("right(9,%d): got %q, want %c", y, c.Rune, style.ShadowRight)
+			t.Errorf("right(10,%d): got %q, want %c", y, c.Rune, style.ShadowRight)
 		}
 		if c.Fg != uint32(style.ShadowColor) {
-			t.Errorf("right(9,%d) Fg: 0x%06X", y, c.Fg)
+			t.Errorf("right(10,%d) Fg: 0x%06X", y, c.Fg)
 		}
 	}
 
-	// Bottom interior (row 4, cols 1-8): ▄.
-	for x := 1; x <= 8; x++ {
-		c := buf.GetCell(x, 4)
+	// Shadow outside: ▄ at row 5, columns 0-9.
+	for x := 0; x < 10; x++ {
+		c := buf.GetCell(x, 5)
 		if c.Rune != style.ShadowBottom {
-			t.Errorf("bottom(%d,4): got %q, want %c", x, c.Rune, style.ShadowBottom)
+			t.Errorf("bottom(%d,5): got %q, want %c", x, c.Rune, style.ShadowBottom)
 		}
+	}
+
+	// Corner: ▒ at (10, 5).
+	if c := buf.GetCell(10, 5); c.Rune != style.ShadowCorner {
+		t.Errorf("corner(10,5): got %q, want %c", c.Rune, style.ShadowCorner)
 	}
 
 	// Child inside.
@@ -107,26 +118,31 @@ func TestCardShadowDoesNotOverlapContent(t *testing.T) {
 	bottomCard.Render(viewport.RenderCtx{Buf: buf}, bottomRect)
 	topCard.Render(viewport.RenderCtx{Buf: buf}, topRect)
 
-	// Top card at (0,0) 10x4. Shadow on border: col 9, row 3.
+	// Top card at (0,0) 10x4. Shadow outside: col 10, row 4.
 	// Bottom card at (0,5) 10x4. Its top-left corner at (0,5) must be intact.
 	c := buf.GetCell(0, 5)
 	if c.Rune != '╭' {
 		t.Errorf("bottom card corner(0,5): got %q, want ╭", c.Rune)
 	}
 
-	// Top card's bottom shadow: ▄ on row 3 (border row).
-	c = buf.GetCell(1, 3)
+	// Top card's border intact.
+	if c := buf.GetCell(9, 3); c.Rune != '╯' {
+		t.Errorf("top card BR(9,3): got %q, want ╯", c.Rune)
+	}
+
+	// Top card's bottom shadow: ▄ at row 4 (outside rect).
+	c = buf.GetCell(1, 4)
 	if c.Rune != style.ShadowBottom {
-		t.Errorf("shadow(1,3): got %q, want %c", c.Rune, style.ShadowBottom)
+		t.Errorf("shadow(1,4): got %q, want %c", c.Rune, style.ShadowBottom)
 	}
 
-	// Top card's right shadow: ▐ on column 9 (border column).
-	c = buf.GetCell(9, 1)
+	// Top card's right shadow: ▐ at column 10 (outside rect).
+	c = buf.GetCell(10, 1)
 	if c.Rune != style.ShadowRight {
-		t.Errorf("shadow(9,1): got %q, want %c", c.Rune, style.ShadowRight)
+		t.Errorf("shadow(10,1): got %q, want %c", c.Rune, style.ShadowRight)
 	}
 
-	// Shadow must NOT leak into interior (row 1, col 1).
+	// Shadow must NOT be inside the card.
 	c = buf.GetCell(1, 1)
 	if c.Rune == style.ShadowBottom || c.Rune == style.ShadowRight {
 		t.Errorf("shadow leaked inside card at (1,1): got %c", c.Rune)

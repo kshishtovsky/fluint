@@ -54,16 +54,9 @@ func (c *Card) Render(ctx viewport.RenderCtx, rect layout.Rect) {
 		}
 	}
 
-	// ── Border (drawn first, shadow overwrites edges) ──────────────
+	// ── Border ──────────────────────────────────────────────────────
 	if c.config.style.HasBorder() {
 		c.drawBorder(ctx, sx, sy, rect.Width, rect.Height)
-	}
-
-	// ── Shadow (on top of border edges, half-cell shift) ──────────
-	// ▐ on right border, ▄ on bottom border, ▒ corner.
-	// Fg = shadow color, Bg = card background.
-	if c.config.style.HasShadow() {
-		c.drawShadow(ctx, sx, sy, rect.Width, rect.Height)
 	}
 
 	// ── Child ───────────────────────────────────────────────────────
@@ -88,67 +81,80 @@ func (c *Card) Render(ctx viewport.RenderCtx, rect layout.Rect) {
 			Height: innerH,
 		})
 	}
+
+	// ── Shadow (outside rect, after everything else) ─────────────
+	// Drawn last so it never interferes with border or content.
+	// Half-blocks sit in cells adjacent to the border:
+	//   ▐ at X+W — left half colored, adjacent to │ at X+W-1
+	//   ▄ at Y+H — bottom half colored, adjacent to ─ at Y+H-1
+	//   ▒ at (X+W, Y+H) — corner join
+	if c.config.style.HasShadow() {
+		c.drawShadow(ctx, sx, sy, rect.Width, rect.Height)
+	}
 }
 
-// drawShadow draws shadow on INTERIOR border cells using half-block
-// runes. Corner cells are preserved — only the straight segments
-// between corners get the shadow overlay.
+// drawShadow draws shadow OUTSIDE the card rect in cells adjacent to
+// the border. Half-block runes create a sub-cell illusion — ▐'s left
+// half is colored (touching the border), right half is transparent.
+// The border is never touched.
 //
 // Visual:
 //
-//	╭───────────────╮     ← corners intact
-//	│    CARD       │▐    ← ▐ on interior right border cells
-//	╰───────────────╯     ← corners intact
-//	  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄     ← ▄ on interior bottom border cells
+//	╭───────────────╮▐  ← ▐ at col X+W, adjacent to ╮ at X+W-1
+//	│    CARD       │▐
+//	╰───────────────╯▐
+//	 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▒  ← ▄ at row Y+H, adjacent to ─ at Y+H-1; ▒ corner
 func (c *Card) drawShadow(ctx viewport.RenderCtx, sx, sy, w, h int) {
 	sh := c.config.style.ShadowCfg()
 	fg := uint32(sh.Color)
 	bufW := ctx.Buf.Width
 	bufH := ctx.Buf.Height
-	bg := uint32(c.config.style.BG())
 
-	// Right strip: ▐ on column X+W-1, interior rows only (skip corners).
+	// Right strip: ▐ at column X+W, rows Y to Y+H-1.
 	if sh.OffsetX > 0 {
-		x := sx + w - 1
+		x := sx + w
 		if x >= 0 && x < bufW {
-			for y := sy + 1; y < sy+h-1; y++ {
+			for y := sy; y < sy+h; y++ {
 				if y < 0 || y >= bufH {
 					continue
 				}
+				old := ctx.Buf.GetCell(x, y)
 				ctx.Buf.SetCell(x, y, buffer.Cell{
 					Rune: style.ShadowRight,
 					Fg:   fg,
-					Bg:   bg,
+					Bg:   old.Bg,
 				})
 			}
 		}
 	}
 
-	// Bottom strip: ▄ on row Y+H-1, interior columns only (skip corners).
+	// Bottom strip: ▄ at row Y+H, columns X to X+W-1.
 	if sh.OffsetY > 0 {
-		y := sy + h - 1
+		y := sy + h
 		if y >= 0 && y < bufH {
-			for x := sx + 1; x < sx+w-1; x++ {
+			for x := sx; x < sx+w; x++ {
 				if x < 0 || x >= bufW {
 					continue
 				}
+				old := ctx.Buf.GetCell(x, y)
 				ctx.Buf.SetCell(x, y, buffer.Cell{
 					Rune: style.ShadowBottom,
 					Fg:   fg,
-					Bg:   bg,
+					Bg:   old.Bg,
 				})
 			}
 		}
 	}
 
-	// Corner: ▒ at (X+W-1, Y+H-1) — joins right and bottom shadows.
+	// Corner: ▒ at (X+W, Y+H).
 	if sh.OffsetX > 0 && sh.OffsetY > 0 {
-		cx, cy := sx+w-1, sy+h-1
+		cx, cy := sx+w, sy+h
 		if cx >= 0 && cx < bufW && cy >= 0 && cy < bufH {
+			old := ctx.Buf.GetCell(cx, cy)
 			ctx.Buf.SetCell(cx, cy, buffer.Cell{
 				Rune: style.ShadowCorner,
 				Fg:   fg,
-				Bg:   bg,
+				Bg:   old.Bg,
 			})
 		}
 	}
