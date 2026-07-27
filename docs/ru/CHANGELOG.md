@@ -9,6 +9,7 @@
 
 ### Добавлено
 - CI/CD пайплайн GitHub Actions (`.github/workflows/ci.yml`) для прогона Go тестов с детектором гонок, `golangci-lint` и анализа кода SonarQube при пуше/PR в ветку `main`.
+- Автоматизированный пайплайн GitHub Release (`.github/workflows/release.yml`), срабатывающий при пуше тегов версий (`v*`).
 - Файл конфигурации SonarQube (`sonar-project.properties`).
 
 ## [v0.1.0] - 2026-07-27
