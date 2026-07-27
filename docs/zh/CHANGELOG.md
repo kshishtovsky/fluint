@@ -9,6 +9,7 @@
 
 ### 新增
 - GitHub Actions CI/CD 流水线 (`.github/workflows/ci.yml`)，在对 `main` 分支进行 push/PR 时自动运行 Go 竞态测试、`golangci-lint` 代码检查和 SonarQube 代码分析。
+- 自动化 GitHub Release 流水线 (`.github/workflows/release.yml`)，在推送版本标签 (`v*`) 时自动触发。
 - SonarQube 配置文件 (`sonar-project.properties`)。
 
 ## [v0.1.0] - 2026-07-27

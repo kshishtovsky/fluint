@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml`) for Go testing with race detector, `golangci-lint`, and SonarQube code analysis on push/PR to `main`.
+- Automated GitHub Release pipeline (`.github/workflows/release.yml`) triggered on version tag pushes (`v*`).
 - SonarQube configuration file (`sonar-project.properties`).
 
 ## [v0.1.0] - 2026-07-27
