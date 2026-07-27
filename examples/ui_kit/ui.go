@@ -1,81 +1,69 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/kshishtovsky/fluint/core/router"
 	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/layout"
 	"github.com/kshishtovsky/fluint/widgets"
 )
 
-// uiState holds all widget references and state.
+// uiState holds all widget references.
 type uiState struct {
-	title       *widgets.Text
-	btnA        *widgets.Button
-	btnB        *widgets.Button
-	list        *widgets.List
-	input       *widgets.TextInput
-	status      *widgets.Text
-	thinking    *widgets.Card // "thinking" block (dim, rounded)
-	answer      *widgets.Card // "answer" block (bright, rounded)
-	sectionBtns *widgets.Card // buttons wrapped in a section card
+	title  *widgets.Text
+	input  *widgets.TextInput
+	status *widgets.Text
+	messages []widgets.Node // rendered top to bottom
 }
 
 func buildUI() *uiState {
 	ui := &uiState{}
 
-	ui.title = widgets.NewText("  fluint ui kit  │  Esc quit  Tab focus", widgets.WithStyle(TitleStyle))
+	ui.title = widgets.NewText("  fluint agent chat  │  Type to message  │  Esc quit", widgets.WithStyle(TitleStyle))
 
-	// -- Buttons --
-	ui.btnA = widgets.NewButton("  Click Me  ", widgets.WithStyle(ButtonDefault),
-		widgets.WithOnPress(func() {
-			ui.btnA.SetStyle(ButtonPressed)
-		}),
-	)
-	ui.btnB = widgets.NewButton("  Reset  ", widgets.WithStyle(ButtonGhost),
-		widgets.WithOnPress(func() {
-			ui.btnA.SetStyle(ButtonDefault)
-			ui.input.SetText("Hello, fluint!")
-			ui.list.SetSelected(0)
-		}),
+	// ── Chat messages (static demo content) ─────────────────────────
+
+	// User message.
+	userMsg := widgets.NewCard(
+		widgets.NewText("  You: Explain the diff engine in fluint", widgets.WithStyle(UserStyle)),
+		widgets.WithStyle(UserCardStyle),
 	)
 
-	// Wrap buttons in a section card.
-	btnRow := widgets.NewText("  [Action]  [Reset]", widgets.WithStyle(BodyStyle))
-	ui.sectionBtns = widgets.NewCard(
-		widgets.NewText("  Click Me │ Reset", widgets.WithStyle(BodyStyle)),
-		widgets.WithStyle(SectionCardStyle),
-	)
-	_ = btnRow
-
-	// -- List --
-	items := make([]widgets.ListItem, 50)
-	for i := range items {
-		items[i] = widgets.ListItem{Text: fmt.Sprintf("  Item %02d", i+1)}
-	}
-	ui.list = widgets.NewList(items,
-		widgets.WithStyle(ListDefault),
-		widgets.WithOnSelect(func(idx int, item widgets.ListItem) {
-			ui.btnA.SetStyle(ButtonPressed)
-		}),
+	// Agent thinking block.
+	thinking := widgets.NewCard(
+		widgets.NewText("  Thinking...", widgets.WithStyle(LabelStyle)),
+		widgets.WithStyle(ThinkingCardStyle),
 	)
 
-	// -- Text input --
-	ui.input = widgets.NewTextInput("Hello, fluint!", widgets.WithStyle(InputDefault))
+	// Agent answer.
+	answer := widgets.NewCard(
+		widgets.NewText("  The diff engine compares front and back buffers cell\n  by cell. Only changed cells are sent to the terminal\n  via ANSI escape sequences. This means static content\n  costs zero I/O per frame.", widgets.WithStyle(BodyStyle)),
+		widgets.WithStyle(AnswerCardStyle),
+	)
 
-	// -- Chat demo cards --
-	thinkingText := widgets.NewText("  Analyzing codebase structure...", widgets.WithStyle(
-		LabelStyle,
-	))
-	ui.thinking = widgets.NewCard(thinkingText, widgets.WithStyle(ThinkingCardStyle))
+	// Info block — code analysis.
+	info := widgets.NewCard(
+		widgets.NewText("  core/diff/diff.go\n  42 lines · 0 allocs/op · 12 ns/cell", widgets.WithStyle(LabelStyle)),
+		widgets.WithStyle(InfoCardStyle),
+	)
 
-	answerText := widgets.NewText("  Found 3 issues:\n  1. Missing error handling\n  2. Unused import\n  3. Race condition", widgets.WithStyle(
-		BodyStyle,
-	))
-	ui.answer = widgets.NewCard(answerText, widgets.WithStyle(AnswerCardStyle))
+	// Another user message.
+	userMsg2 := widgets.NewCard(
+		widgets.NewText("  You: How does the Card widget handle shadows?", widgets.WithStyle(UserStyle)),
+		widgets.WithStyle(UserCardStyle),
+	)
 
-	// -- Status bar --
+	// Agent answer 2.
+	answer2 := widgets.NewCard(
+		widgets.NewText("  Shadows are drawn only in the bottom and right strips\n  outside the card rect — never under the card itself.\n  This prevents overlap with content below.", widgets.WithStyle(BodyStyle)),
+		widgets.WithStyle(AnswerCardStyle),
+	)
+
+	ui.messages = []widgets.Node{userMsg, thinking, answer, info, userMsg2, answer2}
+
+	// ── Input ───────────────────────────────────────────────────────
+	ui.input = widgets.NewTextInput("", widgets.WithStyle(InputDefault))
+
+	// ── Status ──────────────────────────────────────────────────────
 	ui.status = widgets.NewText("", widgets.WithStyle(StatusStyle))
 
 	return ui
@@ -83,115 +71,72 @@ func buildUI() *uiState {
 
 func setupRouter(ui *uiState) *router.Router {
 	r := router.New()
-	r.Register(ui.btnA)
-	r.Register(ui.btnB)
-	r.Register(ui.list)
 	r.Register(ui.input)
-	r.Focus(ui.btnA)
+	r.Focus(ui.input)
 	return r
 }
 
-// updateFocusStyles applies theme-driven state styles based on which
-// widget currently has focus. This is the "state discipline" from
-// Hallmark's component-scope: every interactive element has a focused
-// visual that differs from its default.
 func (ui *uiState) updateFocusStyles(r *router.Router) {
-	focused := r.Focused()
-
-	if focused == ui.btnA {
-		if ui.btnA.Style().BG() == ButtonPressed.BG() {
-			return
-		}
-		ui.btnA.SetStyle(ButtonFocused)
+	if r.Focused() == ui.input {
+		ui.input.SetStyle(InputFocused)
 	} else {
-		if ui.btnA.Style().BG() == ButtonPressed.BG() {
-			return
-		}
-		ui.btnA.SetStyle(ButtonDefault)
-	}
-
-	if focused == ui.btnB {
-		ui.btnB.SetStyle(ButtonFocused)
-	} else {
-		ui.btnB.SetStyle(ButtonGhost)
+		ui.input.SetStyle(InputDefault)
 	}
 }
 
 func newStatus(r *router.Router, ui *uiState) *widgets.Text {
 	focused := "none"
-	switch r.Focused() {
-	case ui.btnA:
-		focused = "btnA"
-	case ui.btnB:
-		focused = "btnB"
-	case ui.list:
-		focused = fmt.Sprintf("list[%d]", ui.list.Selected())
-	case ui.input:
+	if r.Focused() == ui.input {
 		focused = "input"
 	}
 	return widgets.NewText(
-		fmt.Sprintf(" Focus: %-10s │ Tab=cycle │ Esc=quit", focused),
+		" Focus: "+focused+" │ Esc quit",
 		widgets.WithStyle(StatusStyle),
 	)
 }
 
 func renderUI(ctx viewport.RenderCtx, ui *uiState, w, h int) {
-	// Layout: Column with rows for each section.
+	// Layout: title + messages area (scrollable) + input + status.
+	// Messages get all remaining space. Input is fixed 3 rows (border + text).
 	root := &layout.Container{
 		Dir: layout.Column,
 		Children: []layout.Child{
 			{Node: layout.Leaf{}, Basis: 1}, // title
-			{Node: layout.Leaf{}, Basis: 4}, // thinking card
-			{Node: layout.Leaf{}, Basis: 5}, // answer card
-			{Node: layout.Leaf{}, Basis: 1}, // separator
-			{Node: layout.Leaf{}, Basis: 1}, // buttons header
-			{Node: layout.Leaf{}, Basis: 1}, // button row
-			{Node: layout.Leaf{}, Grow: 3},  // list
-			{Node: layout.Leaf{}, Basis: 1}, // input
+			{Node: layout.Leaf{}, Grow: 1},  // messages (fills remaining)
+			{Node: layout.Leaf{}, Basis: 3}, // input card
 			{Node: layout.Leaf{}, Basis: 1}, // status
 		},
 	}
-	all := make([]layout.Rect, 0, 18)
+	all := make([]layout.Rect, 0, 8)
 	all = root.Measure(w, h, all)
 
 	rTitle := all[0]
-	rThinking := all[2]
-	rAnswer := all[4]
-	rSep := all[6]
-	rBtnHeader := all[8]
-	rBtnRow := all[10]
-	rList := all[12]
-	rInput := all[14]
-	rStatus := all[16]
+	rMessages := all[2]
+	rInput := all[4]
+	rStatus := all[6]
 
-	// Title bar.
+	// Title.
 	ui.title.Render(ctx, rTitle)
 
-	// Chat demo: Thinking card (dim) + Answer card (bright).
-	ui.thinking.Render(ctx, rThinking)
-	ui.answer.Render(ctx, rAnswer)
+	// Messages — stack vertically inside the messages area.
+	msgY := rMessages.Y
+	for _, msg := range ui.messages {
+		msgH := 4 // card height: 1 border + 2 content + 1 border
+		if msgY+msgH > rMessages.Y+rMessages.Height {
+			break // clip: no room
+		}
+		msg.Render(ctx, layout.Rect{
+			X:      rMessages.X + 1,
+			Y:      msgY,
+			Width:  rMessages.Width - 2,
+			Height: msgH,
+		})
+		msgY += msgH + 1 // +1 gap between messages
+	}
 
-	// Separator.
-	sepText := widgets.NewText("───────────── Controls ─────────────", widgets.WithStyle(LabelStyle))
-	sepText.Render(ctx, rSep)
-
-	// Buttons header + row.
-	btnHeader := widgets.NewText(" Buttons ", widgets.WithStyle(HeaderStyle))
-	btnHeader.Render(ctx, rBtnHeader)
-	halfW := rBtnRow.Width / 2
-	ui.btnA.Render(ctx, layout.Rect{X: rBtnRow.X, Y: rBtnRow.Y, Width: halfW, Height: rBtnRow.Height})
-	ui.btnB.Render(ctx, layout.Rect{X: rBtnRow.X + halfW, Y: rBtnRow.Y, Width: rBtnRow.Width - halfW, Height: rBtnRow.Height})
-
-	// List.
-	listHeader := widgets.NewText(" List (↑↓ + Enter) ", widgets.WithStyle(HeaderStyle))
-	listHeader.Render(ctx, rList)
-	ui.list.Render(ctx, rList)
-
-	// Input.
-	inputHeader := widgets.NewText(" Input (type to edit) ", widgets.WithStyle(HeaderStyle))
-	inputHeader.Render(ctx, rInput)
+	// Input card — full width at bottom.
 	ui.input.Render(ctx, rInput)
 
-	// Status bar.
+	// Status.
 	ui.status.Render(ctx, rStatus)
 }

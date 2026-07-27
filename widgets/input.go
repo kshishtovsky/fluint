@@ -4,6 +4,7 @@ import (
 	"github.com/kshishtovsky/fluint/core/buffer"
 	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/layout"
+	"github.com/kshishtovsky/fluint/style"
 )
 
 // TextInput is a single-line text editing widget. It maintains a rune
@@ -36,6 +37,12 @@ func (ti *TextInput) SetText(s string) {
 	ti.scroll = 0
 	ti.adjustScroll()
 }
+
+// Style returns the input's current style.
+func (ti *TextInput) Style() style.Style { return ti.config.style }
+
+// SetStyle replaces the input's style.
+func (ti *TextInput) SetStyle(s style.Style) { ti.config.style = s }
 
 // adjustScroll ensures the cursor is visible within the widget width.
 func (ti *TextInput) adjustScroll() {

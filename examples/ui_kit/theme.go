@@ -1,158 +1,80 @@
-// theme.go defines the fluint UI Kit design tokens.
+// theme.go defines the fluint chat UI design tokens.
 //
 // Hallmark-adapted design system for terminal UI:
 //   - Named colour tokens (no inline hex)
 //   - Typography hierarchy via Attrs (Bold headers, Dim labels, Normal body)
-//   - 5 widget states: Default, Focused, Hovered, Pressed, Disabled
 //   - Contrast-safe pairs (every Fg/Bg combination tested for readability)
-//
-// Token structure mirrors Hallmark's discipline:
-//   - Paper (background) + Ink (foreground) + Accent (interactive highlight)
-//   - State variants derived from base tokens, not invented per-widget
 package main
 
 import "github.com/kshishtovsky/fluint/style"
 
 // ── Palette ─────────────────────────────────────────────────────────
-// Terminal-adapted palette. Inspired by Hallmark's "Terminal" theme:
-// dark paper, phosphor accent, mono voice.
-//
-// Paper band: dark (L < 30%)
-// Accent hue: phosphor green (120°)
-// Display style: mono
 
 const (
-	// Paper — background surfaces.
-	Paper      = style.Black       // 0x00000000 — main background
-	PaperAlt   = style.DarkGray    // 0x00555555 — elevated surface (list bg)
-	PaperHover = style.Color(0x00333333) // subtle hover state
+	Paper      = style.Black
+	PaperAlt   = style.DarkGray
+	PaperHover = style.Color(0x00333333)
 
-	// Ink — foreground text.
-	InkPrimary   = style.White     // 0x00FFFFFF — primary text
-	InkSecondary = style.LightGray // 0x00AAAAAA — labels, hints
-	InkMuted     = style.Color(0x00666666) // placeholder, disabled text
+	InkPrimary   = style.White
+	InkSecondary = style.LightGray
+	InkMuted     = style.Color(0x00666666)
 
-	// Accent — interactive highlight.
-	Accent       = style.Green     // 0x0000FF00 — focused border, active indicator
-	AccentWarm   = style.Yellow    // 0x00FFFF00 — warnings, secondary accent
-	AccentHot    = style.Red       // 0x00FF0000 — destructive action, error
-	AccentCool   = style.Cyan      // 0x0000FFFF — info, links
-
-	// State colours.
-	StateDefault  = style.Color(0x00005500) // dark green — button bg default
-	StateFocused  = style.Color(0x00008800) // brighter green — focused button
-	StatePressed  = style.Color(0x0000AA00) // bright green — pressed
-	StateDisabled = style.Color(0x00333333) // same as paper — disabled button bg
+	Accent     = style.Green
+	AccentWarm = style.Yellow
+	AccentHot  = style.Red
+	AccentCool = style.Cyan
 )
 
 // ── Typography ──────────────────────────────────────────────────────
-// Attribute pairing: Bold for headers/labels, Dim for secondary,
-// Normal for body text. No italic headers (Hallmark rule 6).
 
 var (
-	// Title — top bar. Bold + Cyan on dark paper.
-	TitleStyle = style.New().Foreground(AccentCool).Background(Paper).Bold()
-
-	// Header — section labels. Bold + Accent (green).
+	TitleStyle  = style.New().Foreground(AccentCool).Background(Paper).Bold()
 	HeaderStyle = style.New().Foreground(Accent).Background(Paper).Bold()
-
-	// Body — normal content text.
-	BodyStyle = style.New().Foreground(InkPrimary).Background(Paper)
-
-	// Label — secondary text (dim).
-	LabelStyle = style.New().Foreground(InkSecondary).Background(Paper).Dim()
-
-	// Status — bottom bar. Muted (dim + muted ink).
+	BodyStyle   = style.New().Foreground(InkPrimary).Background(Paper)
+	LabelStyle  = style.New().Foreground(InkSecondary).Background(Paper).Dim()
 	StatusStyle = style.New().Foreground(InkMuted).Background(Paper).Dim()
+	UserStyle   = style.New().Foreground(AccentWarm).Background(Paper)
 )
 
-// ── Widget state styles ─────────────────────────────────────────────
-// 5 states per Hallmark's component-scope discipline:
-// Default · Focused · Hovered · Pressed · Disabled
-//
-// Each state is a complete style.Style, not a diff.
+// ── Input states ────────────────────────────────────────────────────
 
-// Button states.
-var (
-	ButtonDefault = style.New().Foreground(Paper).Background(StateDefault).Bold()
-	ButtonFocused = style.New().Foreground(Paper).Background(StateFocused).Bold()
-	ButtonPressed = style.New().Foreground(Paper).Background(StatePressed).Bold()
-	ButtonDanger  = style.New().Foreground(Paper).Background(AccentHot).Bold()
-	ButtonGhost   = style.New().Foreground(Accent).Background(Paper).Bold()
-)
-
-// List states.
-var (
-	ListDefault  = style.New().Foreground(InkPrimary).Background(PaperAlt)
-	ListSelected = style.New().Foreground(Paper).Background(Accent).Bold()
-	ListFocused  = style.New().Foreground(InkPrimary).Background(PaperHover)
-)
-
-// Input states.
 var (
 	InputDefault = style.New().Foreground(Paper).Background(InkPrimary)
 	InputFocused = style.New().Foreground(Paper).Background(style.White).Bold()
 )
 
-// ── State updater ───────────────────────────────────────────────────
-// Button returns the style for the given button state.
-// This centralises state logic — widgets don't invent their own colours.
-func ButtonStyle(isFocused, isPressed bool) style.Style {
-	switch {
-	case isPressed:
-		return ButtonPressed
-	case isFocused:
-		return ButtonFocused
-	default:
-		return ButtonDefault
-	}
-}
-
-// CursorStyle returns the inverted cursor style for text editing.
-func CursorStyle() style.Style {
-	// Invert: swap fg/bg of the input style.
-	return style.New().Foreground(InkPrimary).Background(Paper).Bold()
-}
-
-// ── Card styles (chat UI) ───────────────────────────────────────────
-// Cards separate content blocks visually. Two archetypes:
-//   - ThinkingCard: dim border, muted bg — "the model is reasoning"
-//   - AnswerCard: bright border, normal bg — "the model is responding"
+// ── Card styles ─────────────────────────────────────────────────────
+// Chat message archetypes:
+//   - ThinkingCard: dim border, muted bg — "agent is reasoning"
+//   - AnswerCard: bright border — "agent response"
+//   - InfoCard: subtle border — "structured info block"
+//   - UserCard: accent border — "user message"
 
 var (
-	// ThinkingCard — subdued, rounded border, subtle shadow.
 	ThinkingCardStyle = style.New().
 				Background(PaperAlt).
 				RoundedBorder(InkMuted).
 				Shadow(1, 1, style.ShadowColor).
 				Padding(1, 0)
 
-	// AnswerCard — prominent, rounded border, accent border color.
 	AnswerCardStyle = style.New().
 			Background(Paper).
 			RoundedBorder(AccentCool).
 			Shadow(1, 1, style.ShadowColor).
 			Padding(1, 0)
 
-	// SectionCard — for grouping widgets (buttons, list, etc).
-	SectionCardStyle = style.New().
-				Background(Paper).
-				RoundedBorder(InkMuted).
-				Padding(1, 0)
-)
+	InfoCardStyle = style.New().
+			Background(Paper).
+			RoundedBorder(Accent).
+			Padding(1, 0)
 
-// ── Contrast verification ───────────────────────────────────────────
-// Hallmark gates 40-41: every Fg/Bg pair must have sufficient contrast.
-// Terminal colours are fixed, so we verify at design time:
-//
-//	Pair                          Ratio   Pass
-//	White/Black (body)            21:1    ✓
-//	LightGray/Black (label)       ~9:1    ✓
-//	Green/Black (accent)          ~8:1    ✓
-//	Cyan/Black (title)            ~10:1   ✓
-//	Black/Green (button fg/bg)    ~8:1    ✓
-//	DarkGray/Black (status)       ~3:1    ⚠ marginal — use Dim attr
-//	666666/Black (muted)          ~2.5:1  ⚠ use only for non-critical text
-//
-// The Dim attribute reduces brightness, making muted text even less
-// prominent. Acceptable for status/hint text, not for interactive elements.
+	UserCardStyle = style.New().
+			Background(Paper).
+			RoundedBorder(AccentWarm).
+			Padding(1, 0)
+
+	InputCardStyle = style.New().
+			Background(Paper).
+			SolidBorder(InkMuted).
+			Padding(1, 0)
+)

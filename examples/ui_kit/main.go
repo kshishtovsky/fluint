@@ -1,12 +1,5 @@
-// ui_kit is an interactive terminal UI demo. Run it, then:
-//
-//   Tab        — cycle focus between widgets
-//   Up/Down    — navigate the list
-//   Enter      — select list item / press button
-//   Left/Right — move cursor in text input
-//   Type       — edit text input
-//   Backspace  — delete char in text input
-//   Escape     — quit
+// ui_kit is an interactive agent chat demo. Run it, then type a
+// message and press Enter. Escape quits.
 //
 // Run:  go run ./examples/ui_kit
 package main
@@ -39,7 +32,6 @@ func main() {
 		w, h = 80, 24
 	}
 
-	// Enable mouse, clear screen, hide cursor.
 	_, _ = tty.Write([]byte("\x1b[?1000h\x1b[?1006h\x1b[2J\x1b[?25l"))
 	defer func() { _, _ = tty.Write([]byte("\x1b[?1000l\x1b[?1006l\x1b[?25h\x1b[2J\x1b[H")) }()
 
@@ -51,15 +43,11 @@ func main() {
 	r := setupRouter(ui)
 	ctx := viewport.RenderCtx{Buf: l.BackBuf}
 
-	// Initial render.
 	ui.updateFocusStyles(r)
 	ui.status = newStatus(r, ui)
 	renderUI(ctx, ui, l.BackBuf.Width, l.BackBuf.Height)
 
 	for {
-		// Block until an event arrives. No idle spinning — render only
-		// when something actually changed. This eliminates the flicker
-		// caused by Clear() + diff on every frame.
 		select {
 		case key := <-l.KeyEvents:
 			if widgets.KeyCode(key.Code) == widgets.KeyEscape {
@@ -91,9 +79,8 @@ func main() {
 			return
 		}
 
-		// Drain any remaining queued events before rendering.
-		drain := true
-		for drain {
+		// Drain remaining events.
+		for {
 			select {
 			case key := <-l.KeyEvents:
 				if widgets.KeyCode(key.Code) == widgets.KeyEscape {
@@ -118,9 +105,10 @@ func main() {
 					l.BackBuf.Resize(nw, nh)
 				}
 			default:
-				drain = false
+				goto done
 			}
 		}
+	done:
 
 		ui.updateFocusStyles(r)
 		ui.status = newStatus(r, ui)
