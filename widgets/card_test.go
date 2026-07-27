@@ -292,5 +292,84 @@ func BenchmarkCardRender(b *testing.B) {
 }
 
 // ---------------------------------------------------------------------------
+// Dither shadow
+// ---------------------------------------------------------------------------
+
+func TestCardDitherShadow(t *testing.T) {
+	t.Parallel()
+
+	child := NewText("Hi", WithStyle(style.New().Foreground(style.White)))
+	card := NewCard(child,
+		WithStyle(
+			style.New().
+				Background(style.Black).
+				RoundedBorder(style.Cyan).
+				DitherShadow(3, 2, style.DarkGray),
+		),
+	)
+
+	// Card at (0,0) 8x3, blur 3 right, 2 down → buffer 12x6.
+	buf := buffer.NewBuffer(12, 6)
+	card.Render(viewport.RenderCtx{Buf: buf}, layout.Rect{X: 0, Y: 0, Width: 8, Height: 3})
+
+	// Border must be intact.
+	if c := buf.GetCell(0, 0); c.Rune != '╭' {
+		t.Errorf("TL(0,0): got %q, want ╭", c.Rune)
+	}
+	if c := buf.GetCell(7, 2); c.Rune != '╯' {
+		t.Errorf("BR(7,2): got %q, want ╯", c.Rune)
+	}
+
+	// Right shadow: column 8 should have density characters (not border chars).
+	c := buf.GetCell(8, 1)
+	if c.Rune == '│' || c.Rune == ' ' {
+		t.Errorf("right shadow(8,1): got %q, want density char", c.Rune)
+	}
+
+	// Bottom shadow: row 3 should have density characters.
+	c = buf.GetCell(4, 3)
+	if c.Rune == '─' || c.Rune == ' ' {
+		t.Errorf("bottom shadow(4,3): got %q, want density char", c.Rune)
+	}
+
+	// Denser near card, sparser farther away.
+	// At (8, 0) — distance 1 from right border → should be dense.
+	// At (10, 0) — distance 3 → should be sparser.
+	near := buf.GetCell(8, 0)
+	far := buf.GetCell(10, 0)
+	if near.Rune == ' ' && far.Rune == ' ' {
+		t.Error("both near and far shadow cells are empty")
+	}
+
+	// Shadow must NOT be inside card.
+	if c := buf.GetCell(1, 1); c.Rune == '@' || c.Rune == '#' || c.Rune == '%' {
+		t.Errorf("shadow leaked inside card at (1,1): got %c", c.Rune)
+	}
+}
+
+func BenchmarkCardDitherRender(b *testing.B) {
+	child := NewText("Hello",
+		WithStyle(style.New().Foreground(style.White)),
+	)
+	card := NewCard(child,
+		WithStyle(
+			style.New().
+				Background(style.Black).
+				RoundedBorder(style.Cyan).
+				DitherShadow(3, 2, style.DarkGray),
+		),
+	)
+	buf := buffer.NewBuffer(25, 7)
+	rect := layout.Rect{X: 0, Y: 0, Width: 15, Height: 4}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		buf.Clear()
+		card.Render(viewport.RenderCtx{Buf: buf}, rect)
+	}
+}
+
+// ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------

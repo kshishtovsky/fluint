@@ -66,12 +66,42 @@ const (
 	BorderRoundedBR rune = '╯'
 )
 
+// ShadowMode selects the shadow rendering algorithm.
+type ShadowMode uint8
+
+const (
+	// ShadowModeSubCell uses half-block runes (▐, ▄, ▒) for a thin
+	// 1-cell shadow. This is the default when Shadow() is used.
+	ShadowModeSubCell ShadowMode = iota
+	// ShadowModeDither uses ASCII density gradient for a soft,
+	// multi-cell blur. Dense characters near the card, sparse at the edge.
+	ShadowModeDither
+)
+
+// ShadowDensityRamp maps a normalised distance [0..1] to a rune.
+// Index 0 = empty (far from card), index 9 = dense (close to card).
+// Declared as a package-level var (not const) because rune arrays
+// cannot be const in Go. Still zero-alloc at runtime.
+var ShadowDensityRamp = [10]rune{
+	' ', // 0 — invisible (beyond shadow)
+	'.', // 1 — barely visible
+	':', // 2
+	'-', // 3
+	'=', // 4
+	'+', // 5
+	'*', // 6
+	'%', // 7
+	'@', // 8
+	'#', // 9 — densest (closest to card)
+}
+
 // ShadowStyle configures a drop shadow behind a widget.
 type ShadowStyle struct {
 	Enabled bool
-	OffsetX int    // horizontal offset (cells)
-	OffsetY int    // vertical offset (rows)
-	Color   Color  // shadow color
+	Mode    ShadowMode
+	OffsetX int   // for SubCell: 1 = enable. For Dither: blur radius in cells.
+	OffsetY int   // for SubCell: 1 = enable. For Dither: blur radius in cells.
+	Color   Color // shadow foreground color
 }
 
 // Style carries foreground, background, text attributes, border, padding,
@@ -177,12 +207,27 @@ func (s Style) Padding(x, y int) Style {
 
 // ── Shadow ──────────────────────────────────────────────────────────
 
-// Shadow returns a copy with a drop shadow enabled.
+// Shadow returns a copy with a sub-cell drop shadow (half-block runes).
 func (s Style) Shadow(offsetX, offsetY int, color Color) Style {
 	s.shadow = ShadowStyle{
 		Enabled: true,
+		Mode:    ShadowModeSubCell,
 		OffsetX: offsetX,
 		OffsetY: offsetY,
+		Color:   color,
+	}
+	return s
+}
+
+// DitherShadow returns a copy with an ASCII density gradient shadow.
+// blurX/blurY set the blur radius in cells. Characters fade from dense
+// (#, @, %) near the card to sparse (., :) at the edge.
+func (s Style) DitherShadow(blurX, blurY int, color Color) Style {
+	s.shadow = ShadowStyle{
+		Enabled: true,
+		Mode:    ShadowModeDither,
+		OffsetX: blurX,
+		OffsetY: blurY,
 		Color:   color,
 	}
 	return s

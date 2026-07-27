@@ -5,6 +5,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект придерживается [семантического версионирования](https://semver.org/lang/ru/spec/v2.0.0.html).
 
+## [v0.10.0] - 2026-07-28
+
+### Добавлено
+- Пакет `style`: тип `ShadowMode` (`ShadowModeSubCell`, `ShadowModeDither`), `ShadowDensityRamp` ([10]rune от ` ` до `#`), метод `DitherShadow(blurX, blurY, color)`. Режим Dither рендерит многоячеистый градиент тени через ASCII-символы плотности — плотные у карточки (`#`, `@`, `%`), разреженные на краю (`.`, `:`). Расстояние Манхэттена для плавного углового затухания.
+- Пакет `widgets`: метод Card `drawDitherShadow` — отображение расстояния в плотность, рендеринг градиента без аллокаций. `drawShadow` dispatch по `ShadowMode`.
+
 ## [v0.9.0] - 2026-07-28
 
 ### Добавлено

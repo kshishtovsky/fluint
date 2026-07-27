@@ -5,6 +5,12 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
+## [v0.10.0] - 2026-07-28
+
+### 新增
+- `style` 包：`ShadowMode` 类型（`ShadowModeSubCell`、`ShadowModeDither`）、`ShadowDensityRamp`（[10]rune，从 ` ` 到 `#`）、`DitherShadow(blurX, blurY, color)` 构建方法。Dither 模式使用 ASCII 密度字符渲染多单元格渐变阴影 — 靠近卡片处密集（`#`、`@`、`%`），边缘处稀疏（`.`、`:`）。曼哈顿距离实现平滑的角落衰减。
+- `widgets` 包：Card `drawDitherShadow` 方法 — 基于距离的密度映射，零分配渐变渲染。`drawShadow` 根据 `ShadowMode` 分发到 sub-cell 或 dither。
+
 ## [v0.9.0] - 2026-07-28
 
 ### 新增

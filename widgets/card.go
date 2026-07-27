@@ -106,11 +106,20 @@ func (c *Card) Render(ctx viewport.RenderCtx, rect layout.Rect) {
 //	 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▒  ← ▄ at row Y+H, adjacent to ─ at Y+H-1; ▒ corner
 func (c *Card) drawShadow(ctx viewport.RenderCtx, sx, sy, w, h int) {
 	sh := c.config.style.ShadowCfg()
+	switch sh.Mode {
+	case style.ShadowModeDither:
+		c.drawDitherShadow(ctx, sx, sy, w, h, sh)
+	default:
+		c.drawSubCellShadow(ctx, sx, sy, w, h, sh)
+	}
+}
+
+// drawSubCellShadow draws a 1-cell shadow using half-block runes (▐, ▄, ▒).
+func (c *Card) drawSubCellShadow(ctx viewport.RenderCtx, sx, sy, w, h int, sh style.ShadowStyle) {
 	fg := uint32(sh.Color)
 	bufW := ctx.Buf.Width
 	bufH := ctx.Buf.Height
 
-	// Right strip: ▐ at column X+W, rows Y to Y+H-1.
 	if sh.OffsetX > 0 {
 		x := sx + w
 		if x >= 0 && x < bufW {
@@ -128,7 +137,6 @@ func (c *Card) drawShadow(ctx viewport.RenderCtx, sx, sy, w, h int) {
 		}
 	}
 
-	// Bottom strip: ▄ at row Y+H, columns X to X+W-1.
 	if sh.OffsetY > 0 {
 		y := sy + h
 		if y >= 0 && y < bufH {
@@ -146,7 +154,6 @@ func (c *Card) drawShadow(ctx viewport.RenderCtx, sx, sy, w, h int) {
 		}
 	}
 
-	// Corner: ▒ at (X+W, Y+H).
 	if sh.OffsetX > 0 && sh.OffsetY > 0 {
 		cx, cy := sx+w, sy+h
 		if cx >= 0 && cx < bufW && cy >= 0 && cy < bufH {
@@ -156,6 +163,102 @@ func (c *Card) drawShadow(ctx viewport.RenderCtx, sx, sy, w, h int) {
 				Fg:   fg,
 				Bg:   old.Bg,
 			})
+		}
+	}
+}
+
+// drawDitherShadow draws a multi-cell gradient shadow using ASCII
+// density characters. Dense near the card (#, @), sparse at the edge
+// (., :). Distance is Manhattan for corners, axis-aligned for sides.
+//
+// Visual (blur=3):
+//
+//	╭──────────╮%=:.
+//	│   CARD   │%=:.
+//	╰──────────╯%=:.
+//	 %*+=-:.         ← density fades left-to-right
+//	  =-:.
+//	   :.
+func (c *Card) drawDitherShadow(ctx viewport.RenderCtx, sx, sy, w, h int, sh style.ShadowStyle) {
+	fg := uint32(sh.Color)
+	bufW := ctx.Buf.Width
+	bufH := ctx.Buf.Height
+	ramp := style.ShadowDensityRamp
+	rampLen := len(ramp)
+
+	blurX := sh.OffsetX
+	blurY := sh.OffsetY
+
+	cardRight := sx + w
+	cardBottom := sy + h
+
+	for dy := 0; dy < blurY; dy++ {
+		for dx := 0; dx < blurX; dx++ {
+			if dx == 0 && dy == 0 {
+				continue
+			}
+
+			// Distance from card edge. Manhattan for smooth corner fade.
+			dist := dx + dy
+			maxDist := blurX + blurY - 2
+			if maxDist < 1 {
+				maxDist = 1
+			}
+
+			// Normalise to ramp index (closer = higher index).
+			idx := rampLen - 1 - (dist*rampLen)/maxDist
+			if idx < 0 {
+				idx = 0
+			}
+			if idx >= rampLen {
+				idx = rampLen - 1
+			}
+			ch := ramp[idx]
+			if ch == ' ' {
+				continue
+			}
+
+			cell := buffer.Cell{Rune: ch, Fg: fg}
+
+			// Bottom-right corner area.
+			if dx > 0 && dy > 0 {
+				cx, cy := cardRight+dx-1, cardBottom+dy-1
+				if cx >= 0 && cx < bufW && cy >= 0 && cy < bufH {
+					old := ctx.Buf.GetCell(cx, cy)
+					cell.Bg = old.Bg
+					ctx.Buf.SetCell(cx, cy, cell)
+				}
+			}
+
+			// Right strip: column cardRight+dx-1, rows cardBottom-1 upward.
+			if dx > 0 && dy == 0 {
+				x := cardRight + dx - 1
+				if x >= 0 && x < bufW {
+					for y := sy; y < cardBottom; y++ {
+						if y < 0 || y >= bufH {
+							continue
+						}
+						old := ctx.Buf.GetCell(x, y)
+						cell.Bg = old.Bg
+						ctx.Buf.SetCell(x, y, cell)
+					}
+				}
+			}
+
+			// Bottom strip: row cardBottom+dy-1, columns cardRight-1 leftward.
+			if dy > 0 && dx == 0 {
+				y := cardBottom + dy - 1
+				if y >= 0 && y < bufH {
+					for x := sx; x < cardRight; x++ {
+						if x < 0 || x >= bufW {
+							continue
+						}
+						old := ctx.Buf.GetCell(x, y)
+						cell.Bg = old.Bg
+						ctx.Buf.SetCell(x, y, cell)
+					}
+				}
+			}
 		}
 	}
 }

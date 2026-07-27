@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.10.0] - 2026-07-28
+
+### Added
+- Package `style`: `ShadowMode` type (`ShadowModeSubCell`, `ShadowModeDither`), `ShadowDensityRamp` ([10]rune from ` ` to `#`), `DitherShadow(blurX, blurY, color)` builder method. Dither mode renders multi-cell gradient shadow using ASCII density characters — dense near card (`#`, `@`, `%`), sparse at edge (`.`, `:`). Manhattan distance for smooth corner fade.
+- Package `widgets`: Card `drawDitherShadow` method — distance-based density mapping, zero-alloc gradient rendering. `drawShadow` dispatches to sub-cell or dither based on `ShadowMode`.
+
 ## [v0.9.0] - 2026-07-28
 
 ### Added
