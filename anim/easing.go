@@ -1,5 +1,6 @@
 // Package anim provides animation primitives for the fluint engine:
-// easing functions today, timing/tween scaffolding to follow.
+// easing functions, a zero-allocation Timeline, and Tween
+// interpolation.
 //
 // All easing functions in this file satisfy the contract:
 //

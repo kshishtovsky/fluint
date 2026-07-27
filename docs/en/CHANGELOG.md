@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Package `core/buffer`: `Buffer.SetSubCellY(x, y, ySub int, color uint32)` method for vertical sub-cell rendering using Unicode half-block glyphs (`▀` U+2580, `▄` U+2584). Doubles vertical resolution with zero additional memory by repurposing existing `Cell.Fg`/`Cell.Bg` fields.
 - ADR-0006: Sub-cell Rendering & Easing Functions architectural decision record.
 
+## [v0.3.0] - 2026-07-28
+
+### Added
+- Package `anim`: `Timeline` and `Tween` system for zero-allocation animation management. `Tween` holds interpolation state (`Start`, `End`, `Duration`, `EaseFunc`, `OnUpdate`, `OnComplete` callbacks). `Timeline.Add` schedules tweens; `Timeline.Update(dt)` advances all active tweens with 0 bytes/op, 0 allocs/op. Completed tweens are marked inactive and skipped. `Timeline.Compact` reclaims dead entries in-place; `Timeline.Clear` resets the timeline preserving slice capacity.
+- Example `examples/vfx_demo`: real-time demo driving 10 concurrent tweens at 60 fps for 2.5 seconds, proving the system works without memory leaks.
+
 ## [v0.1.1] - 2026-07-27
 
 ### Added
