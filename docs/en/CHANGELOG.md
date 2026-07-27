@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Package `core/buffer`: `Buffer.SetSubCellY(x, y, ySub int, color uint32)` method for vertical sub-cell rendering using Unicode half-block glyphs (`▀` U+2580, `▄` U+2584). Doubles vertical resolution with zero additional memory by repurposing existing `Cell.Fg`/`Cell.Bg` fields.
 - ADR-0006: Sub-cell Rendering & Easing Functions architectural decision record.
 
+## [v0.4.0] - 2026-07-28
+
+### Added
+- Package `widgets`: base widget system with Functional Options API (ADR-0004). Includes `Node` interface, shared `Config` struct, and `Option` functional option type with helpers (`WithWidth`, `WithHeight`, `WithForeground`, `WithBackground`, `WithBold`, `WithItalic`, `WithUnderline`, `WithDim`, `WithStrikethrough`, `WithReverse`, `WithOnPress`).
+- Package `widgets`: `Text` widget for single-line text rendering with clipping, color, and attribute support. Zero-allocation render path.
+- Package `widgets`: `Button` widget with centred label rendering, full-rect background fill, and `Press()` callback. Zero-allocation render path (0 allocs/op, ~193 ns/op).
+- Git pre-commit hook (`.git/hooks/pre-commit`) running `go test -race ./...` and `golangci-lint run ./...` before every commit.
+
 ## [v0.3.0] - 2026-07-28
 
 ### Added
