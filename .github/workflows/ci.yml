@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: "actions/checkout@11d5960a326750d5838078e36cf38b85af677262"  # v4
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: "actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff"  # v5
         with:
           go-version: '1.24.x'
           cache: true
@@ -30,7 +30,7 @@ jobs:
           go test -race -v -coverprofile=coverage.out ./...
 
       - name: Upload Coverage Artifact
-        uses: actions/upload-artifact@v4
+        uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"  # v4
         with:
           name: coverage-report
           path: coverage.out
@@ -49,7 +49,7 @@ jobs:
           cache: true
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: "golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84"  # v6
         with:
           version: latest
 
@@ -73,6 +73,6 @@ jobs:
           go test -race -coverprofile=coverage.out ./...
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v3
+        uses: "SonarSource/sonarcloud-github-action@383f7e52eae3ab0510c3cb0e7d9d150bbaeab838"
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
