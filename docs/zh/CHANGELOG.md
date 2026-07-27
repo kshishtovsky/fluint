@@ -16,7 +16,7 @@
 - SonarCloud 配置文件 (`sonar-project.properties`)。
 
 ### 修复
-- 将 CI 流水线中的 `golangci-lint-action` 版本更新为 `latest`，以支持 Go 1.25。
+- 将 `go.mod` 及 CI 流水线中的 Go 版本更新为 1.24，以解决 `golangci-lint` 的版本兼容性冲突。
 
 ## [v0.1.0] - 2026-07-27
 

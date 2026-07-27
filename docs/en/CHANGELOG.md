@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SonarCloud configuration file (`sonar-project.properties`).
 
 ### Fixed
-- Updated `golangci-lint-action` version to `latest` in CI pipeline for Go 1.25 compatibility.
+- Updated Go directive in `go.mod` and CI pipeline to Go 1.24 to resolve `golangci-lint` release version incompatibility.
 
 ## [v0.1.0] - 2026-07-27
 
