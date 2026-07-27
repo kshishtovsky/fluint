@@ -5,6 +5,13 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект придерживается [семантического версионирования](https://semver.org/lang/ru/spec/v2.0.0.html).
 
+## [v0.6.0] - 2026-07-28
+
+### Добавлено
+- Пакет `core/router`: система маршрутизации событий с управлением фокусом клавиатуры и хит-тестингом мыши. `Router` отправляет события клавиш виджету в фокусе, события мыши — верхнему виджету под курсором (обратный Z-порядок). Поддерживает `Register`/`Unregister`, `FocusNext`/`FocusPrev` (табуляция) и автоматические переходы `MouseEnter`/`MouseLeave`. `DispatchMouse` без аллокаций (10 виджетов, ~190 ns/op).
+- Пакет `widgets`: интерфейс `Node` расширен методами `Geometry()`/`SetGeometry()`, `OnKey(KeyEvent) bool`, `OnMouse(MouseEvent) bool` и `Focusable() bool`. Типы событий (`KeyEvent`, `MouseEvent`, `KeyCode`, `MouseButton`, `MouseAction`) определены в `widgets/events.go`.
+- Пакет `widgets`: `Text` реализует полный интерфейс `Node` (не фокусируемый, игнорирует все события). `Button` реагирует на Enter и левый клик мыши. Хелпер `HitTest(rect, x, y)` для проверки точки в прямоугольнике.
+
 ## [v0.5.0] - 2026-07-28
 
 ### Добавлено

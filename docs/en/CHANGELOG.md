@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.6.0] - 2026-07-28
+
+### Added
+- Package `core/router`: event routing system with keyboard focus management and mouse hit-testing. `Router` dispatches key events to the focused widget and mouse events to the topmost widget under the cursor (reverse Z-order). Supports `Register`/`Unregister`, `FocusNext`/`FocusPrev` (tab cycling), and automatic `MouseEnter`/`MouseLeave` transitions. Zero-alloc `DispatchMouse` (10 widgets, ~190 ns/op).
+- Package `widgets`: `Node` interface extended with `Geometry()`/`SetGeometry()`, `OnKey(KeyEvent) bool`, `OnMouse(MouseEvent) bool`, and `Focusable() bool`. Event types (`KeyEvent`, `MouseEvent`, `KeyCode`, `MouseButton`, `MouseAction`) defined in `widgets/events.go`.
+- Package `widgets`: `Text` implements the full `Node` interface (not focusable, ignores all events). `Button` responds to Enter key and left-click mouse events. `HitTest(rect, x, y)` helper function for point-in-rect testing.
+
 ## [v0.5.0] - 2026-07-28
 
 ### Added

@@ -7,10 +7,12 @@ import (
 )
 
 // Button is a widget that renders a clickable label centred inside a
-// filled rectangle.
+// filled rectangle. It is focusable and responds to Enter key and
+// left mouse clicks.
 type Button struct {
 	text   string
 	config Config
+	rect   layout.Rect
 }
 
 // NewButton creates a Button widget. The text argument is the mandatory
@@ -29,23 +31,22 @@ func (b *Button) Press() {
 	}
 }
 
-// Style returns the button's current style, enabling external mutation
-// (e.g. animation of background color via anim.Tween).
+// Style returns the button's current style.
 func (b *Button) Style() style.Style {
 	return b.config.style
 }
 
-// SetStyle replaces the button's style. Intended for animation use cases
-// where a Tween callback updates the style each frame.
+// SetStyle replaces the button's style.
 func (b *Button) SetStyle(s style.Style) {
 	b.config.style = s
 }
 
 // Render draws the button into buf within rect. The entire rect is
 // filled with the style background, then the label is centred
-// horizontally and vertically.
+// horizontally and vertically. The widget's geometry is updated.
 func (b *Button) Render(buf *buffer.Buffer, rect layout.Rect) {
-	// Fill the entire rect with background.
+	b.rect = rect
+
 	bgCell := b.config.style.Apply(buffer.Cell{Rune: ' '})
 	for y := rect.Y; y < rect.Y+rect.Height; y++ {
 		for x := rect.X; x < rect.X+rect.Width; x++ {
@@ -53,7 +54,6 @@ func (b *Button) Render(buf *buffer.Buffer, rect layout.Rect) {
 		}
 	}
 
-	// Count runes for correct centering.
 	runeCount := 0
 	for range b.text {
 		runeCount++
@@ -69,7 +69,6 @@ func (b *Button) Render(buf *buffer.Buffer, rect layout.Rect) {
 		startY = rect.Y
 	}
 
-	// Write the label.
 	labelCell := b.config.style.Apply(buffer.Cell{})
 	x := startX
 	for _, r := range b.text {
@@ -81,3 +80,34 @@ func (b *Button) Render(buf *buffer.Buffer, rect layout.Rect) {
 		x++
 	}
 }
+
+// Geometry returns the widget's current position and size.
+func (b *Button) Geometry() layout.Rect { return b.rect }
+
+// SetGeometry updates the widget's position and size.
+func (b *Button) SetGeometry(rect layout.Rect) { b.rect = rect }
+
+// OnKey handles keyboard events. Pressing Enter triggers the button.
+// Returns true if the event was consumed.
+func (b *Button) OnKey(key KeyEvent) bool {
+	if key.Code == KeyEnter {
+		b.Press()
+		return true
+	}
+	return false
+}
+
+// OnMouse handles mouse events. A left-button press inside the button
+// triggers it. Returns true if the event was consumed.
+func (b *Button) OnMouse(mouse MouseEvent) bool {
+	if mouse.Button == MouseLeft && mouse.Action == MousePress {
+		if HitTest(b.rect, mouse.X, mouse.Y) {
+			b.Press()
+			return true
+		}
+	}
+	return false
+}
+
+// Focusable returns true — Button can receive keyboard focus.
+func (b *Button) Focusable() bool { return true }

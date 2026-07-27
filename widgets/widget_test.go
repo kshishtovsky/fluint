@@ -254,6 +254,132 @@ func TestButtonPressCallsHandler(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// Node interface — geometry and events
+// ---------------------------------------------------------------------------
+
+func TestButtonGeometry(t *testing.T) {
+	t.Parallel()
+
+	btn := NewButton("X")
+	btn.SetGeometry(layout.Rect{X: 5, Y: 3, Width: 10, Height: 2})
+	got := btn.Geometry()
+	if got.X != 5 || got.Y != 3 || got.Width != 10 || got.Height != 2 {
+		t.Errorf("Geometry: got %+v, want {X:5 Y:3 Width:10 Height:2}", got)
+	}
+}
+
+func TestButtonFocusable(t *testing.T) {
+	t.Parallel()
+
+	btn := NewButton("X")
+	if !btn.Focusable() {
+		t.Error("Button should be focusable")
+	}
+}
+
+func TestButtonOnKeyEnter(t *testing.T) {
+	t.Parallel()
+
+	var called bool
+	btn := NewButton("X", WithOnPress(func() { called = true }))
+	consumed := btn.OnKey(KeyEvent{Code: KeyEnter})
+	if !consumed {
+		t.Error("Enter should be consumed")
+	}
+	if !called {
+		t.Error("Enter should trigger onPress")
+	}
+}
+
+func TestButtonOnKeyOther(t *testing.T) {
+	t.Parallel()
+
+	btn := NewButton("X")
+	consumed := btn.OnKey(KeyEvent{Rune: 'a'})
+	if consumed {
+		t.Error("non-Enter key should not be consumed")
+	}
+}
+
+func TestButtonOnMouseLeftClick(t *testing.T) {
+	t.Parallel()
+
+	var called bool
+	btn := NewButton("X", WithOnPress(func() { called = true }))
+	btn.SetGeometry(layout.Rect{X: 0, Y: 0, Width: 10, Height: 3})
+
+	consumed := btn.OnMouse(MouseEvent{Button: MouseLeft, Action: MousePress, X: 5, Y: 1})
+	if !consumed {
+		t.Error("left click inside should be consumed")
+	}
+	if !called {
+		t.Error("left click should trigger onPress")
+	}
+}
+
+func TestButtonOnMouseOutside(t *testing.T) {
+	t.Parallel()
+
+	btn := NewButton("X")
+	btn.SetGeometry(layout.Rect{X: 0, Y: 0, Width: 10, Height: 3})
+
+	consumed := btn.OnMouse(MouseEvent{Button: MouseLeft, Action: MousePress, X: 15, Y: 5})
+	if consumed {
+		t.Error("click outside should not be consumed")
+	}
+}
+
+func TestButtonOnMouseMotion(t *testing.T) {
+	t.Parallel()
+
+	btn := NewButton("X")
+	btn.SetGeometry(layout.Rect{X: 0, Y: 0, Width: 10, Height: 3})
+
+	consumed := btn.OnMouse(MouseEvent{Action: MouseMotion, X: 5, Y: 1})
+	if consumed {
+		t.Error("motion should not be consumed")
+	}
+}
+
+func TestTextNotFocusable(t *testing.T) {
+	t.Parallel()
+
+	txt := NewText("X")
+	if txt.Focusable() {
+		t.Error("Text should not be focusable")
+	}
+	if txt.OnKey(KeyEvent{Code: KeyEnter}) {
+		t.Error("Text should not consume keys")
+	}
+	if txt.OnMouse(MouseEvent{Button: MouseLeft, Action: MousePress, X: 0, Y: 0}) {
+		t.Error("Text should not consume mouse")
+	}
+}
+
+func TestHitTest(t *testing.T) {
+	t.Parallel()
+
+	rect := layout.Rect{X: 5, Y: 3, Width: 10, Height: 4}
+	cases := []struct {
+		x, y int
+		want bool
+	}{
+		{5, 3, true},   // top-left corner
+		{14, 6, true},  // bottom-right corner (exclusive: 5+10-1=14, 3+4-1=6)
+		{4, 3, false},  // left of rect
+		{15, 3, false}, // right of rect (5+10=15, out)
+		{5, 2, false},  // above rect
+		{5, 7, false},  // below rect (3+4=7, out)
+		{10, 5, true},  // center
+	}
+	for _, tc := range cases {
+		if got := HitTest(rect, tc.x, tc.y); got != tc.want {
+			t.Errorf("HitTest(%d,%d): got %v, want %v", tc.x, tc.y, got, tc.want)
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Benchmarks
 // ---------------------------------------------------------------------------
 

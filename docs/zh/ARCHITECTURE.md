@@ -9,6 +9,7 @@ internal/platform   — 构建标签背后的 OS 特性代码
 core/buffer         — 单元格网格 (rune + style + attrs), front/back 缓冲区
 core/diff           — Back vs front → 最小变更集
 core/loop           — 帧调度器, delta-time, 事件总线
+core/router         — 事件路由, 焦点管理, 命中测试
 render/ansi         — 变更集 → ANSI 字节, 同步输出 (mode 2026)
 anim                — 缓动, 补间/时间轴, delta-time 插值
 layout              — 类 Flexbox 布局系统 (ADR-0001)
@@ -22,9 +23,9 @@ examples            — 示例与 VFX 演示
 ```
 examples → widgets → layout → core/buffer ← core/diff ← render/ansi
                 ↘ anim ↗          ↑
-                              core/loop
-                                  ↑
-                          internal/term ← internal/platform
+              core/router      core/loop
+                  ↑               ↑
+                  └─────── internal/term ← internal/platform
 ```
 
 严禁**循环导入**。
