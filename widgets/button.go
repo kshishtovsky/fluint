@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"github.com/kshishtovsky/fluint/core/buffer"
+	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/layout"
 	"github.com/kshishtovsky/fluint/style"
 )
@@ -41,16 +42,23 @@ func (b *Button) SetStyle(s style.Style) {
 	b.config.style = s
 }
 
-// Render draws the button into buf within rect. The entire rect is
-// filled with the style background, then the label is centred
-// horizontally and vertically. The widget's geometry is updated.
-func (b *Button) Render(buf *buffer.Buffer, rect layout.Rect) {
+// Render draws the button into ctx.Buf within the given world-space rect.
+// The entire rect is filled with the style background, then the label is
+// centred. Widgets fully outside the viewport are culled; partial overlap
+// is clipped per-cell.
+func (b *Button) Render(ctx viewport.RenderCtx, rect layout.Rect) {
 	b.rect = rect
 
+	if !Visible(ctx.View, rect.X, rect.Y, rect.Width, rect.Height) {
+		return
+	}
+
+	sx, sy := Screen(ctx.View, rect.X, rect.Y)
+
 	bgCell := b.config.style.Apply(buffer.Cell{Rune: ' '})
-	for y := rect.Y; y < rect.Y+rect.Height; y++ {
-		for x := rect.X; x < rect.X+rect.Width; x++ {
-			buf.SetCell(x, y, bgCell)
+	for y := sy; y < sy+rect.Height; y++ {
+		for x := sx; x < sx+rect.Width; x++ {
+			ctx.Buf.SetCell(x, y, bgCell)
 		}
 	}
 
@@ -59,24 +67,24 @@ func (b *Button) Render(buf *buffer.Buffer, rect layout.Rect) {
 		runeCount++
 	}
 
-	startX := rect.X + (rect.Width-runeCount)/2
-	if startX < rect.X {
-		startX = rect.X
+	startX := sx + (rect.Width-runeCount)/2
+	if startX < sx {
+		startX = sx
 	}
 
-	startY := rect.Y + rect.Height/2
-	if startY >= rect.Y+rect.Height {
-		startY = rect.Y
+	startY := sy + rect.Height/2
+	if startY >= sy+rect.Height {
+		startY = sy
 	}
 
 	labelCell := b.config.style.Apply(buffer.Cell{})
 	x := startX
 	for _, r := range b.text {
-		if x >= rect.X+rect.Width {
+		if x >= sx+rect.Width {
 			break
 		}
 		labelCell.Rune = r
-		buf.SetCell(x, startY, labelCell)
+		ctx.Buf.SetCell(x, startY, labelCell)
 		x++
 	}
 }

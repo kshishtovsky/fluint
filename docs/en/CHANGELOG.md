@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.7.0] - 2026-07-28
+
+### Added
+- Package `core/viewport`: viewport/camera system for virtual canvas rendering. `Viewport` struct with `Width`/`Height` (physical dimensions) and `OffsetX`/`OffsetY` (camera scroll position). Methods: `Scroll(dx, dy)` (clamped to non-negative), `Center(x, y)` (centre camera on world point), `Resize`, `Visible(wx, wy, ww, wh)` (intersection test for culling), `ScreenX`/`ScreenY` (world-to-screen conversion). `RenderCtx` struct bundles `*buffer.Buffer` with optional `*Viewport`.
+- Package `widgets`: `Node.Render` signature changed from `Render(buf, rect)` to `Render(ctx viewport.RenderCtx, rect)`. Widgets now cull (skip entirely) when fully outside viewport and clip per-cell via `buffer.SetCell`. Passing `RenderCtx{Buf: buf}` (nil viewport) preserves backward-compatible screen-space rendering.
+- Package `widgets`: `Visible()` and `Screen()` helpers for viewport-aware rendering.
+- Package `router`: `DispatchMouseViewport(mouse, view)` translates screen-space mouse coordinates to world-space via viewport offset before hit-testing.
+
+### Changed
+- `widgets.Node.Render` signature: `Render(buf *buffer.Buffer, rect layout.Rect)` → `Render(ctx viewport.RenderCtx, rect layout.Rect)`. All widgets, tests, and examples updated.
+
 ## [v0.6.0] - 2026-07-28
 
 ### Added

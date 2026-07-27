@@ -5,6 +5,17 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект придерживается [семантического версионирования](https://semver.org/lang/ru/spec/v2.0.0.html).
 
+## [v0.7.0] - 2026-07-28
+
+### Добавлено
+- Пакет `core/viewport`: система вьюпорта/камеры для рендеринга виртуального холста. Структура `Viewport` с `Width`/`Height` (физические размеры) и `OffsetX`/`OffsetY` (смещение камеры). Методы: `Scroll(dx, dy)` (с ограничением ≥ 0), `Center(x, y)` (центрирование камеры на мировой точке), `Resize`, `Visible(wx, wy, ww, wh)` (тест пересечения для куллинга), `ScreenX`/`ScreenY` (преобразование мировых координат в экранные). Структура `RenderCtx` объединяет `*buffer.Buffer` с опциональным `*Viewport`.
+- Пакет `widgets`: сигнатура `Node.Render` изменена с `Render(buf, rect)` на `Render(ctx viewport.RenderCtx, rect)`. Виджеты пропускают рендеринг при полном выходе за пределы вьюпорта и клиппинг по ячейкам через `buffer.SetCell`. Передача `RenderCtx{Buf: buf}` (nil viewport) сохраняет обратно совместимый рендеринг в экранных координатах.
+- Пакет `widgets`: хелперы `Visible()` и `Screen()` для рендеринга с учётом вьюпорта.
+- Пакет `router`: `DispatchMouseViewport(mouse, view)` транслирует экранные координаты мыши в мировые через смещение вьюпорта перед хит-тестингом.
+
+### Изменено
+- Сигнатура `widgets.Node.Render`: `Render(buf *buffer.Buffer, rect layout.Rect)` → `Render(ctx viewport.RenderCtx, rect layout.Rect)`. Все виджеты, тесты и примеры обновлены.
+
 ## [v0.6.0] - 2026-07-28
 
 ### Добавлено

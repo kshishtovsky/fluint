@@ -13,6 +13,7 @@
 package router
 
 import (
+	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/widgets"
 )
 
@@ -114,6 +115,17 @@ func (r *Router) DispatchMouse(mouse widgets.MouseEvent) bool {
 		return hit.OnMouse(mouse)
 	}
 	return false
+}
+
+// DispatchMouseViewport is like DispatchMouse but translates screen-space
+// mouse coordinates to world-space using the viewport's offset before
+// hit-testing. This allows widgets placed at world coordinates (e.g. 50,50)
+// to receive clicks at screen position (0,0) when the viewport is scrolled.
+func (r *Router) DispatchMouseViewport(mouse widgets.MouseEvent, view *viewport.Viewport) bool {
+	world := mouse
+	world.X += view.OffsetX
+	world.Y += view.OffsetY
+	return r.DispatchMouse(world)
 }
 
 // Focus sets focus on the given widget. Pass nil to clear focus.

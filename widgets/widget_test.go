@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/kshishtovsky/fluint/core/buffer"
+	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/layout"
 	"github.com/kshishtovsky/fluint/style"
 )
@@ -105,7 +106,7 @@ func TestTextRender(t *testing.T) {
 		WithBold(),
 	)
 
-	txt.Render(buf, layout.Rect{X: 0, Y: 0, Width: 10, Height: 1})
+	txt.Render(viewport.RenderCtx{Buf: buf}, layout.Rect{X: 0, Y: 0, Width: 10, Height: 1})
 
 	want := []struct {
 		x    int
@@ -140,7 +141,7 @@ func TestTextRenderWithStyle(t *testing.T) {
 	s := style.New().Foreground(style.Cyan).Background(style.DarkGray).Underline()
 	buf := buffer.NewBuffer(5, 1)
 	txt := NewText("Hi", WithStyle(s))
-	txt.Render(buf, layout.Rect{X: 0, Y: 0, Width: 5, Height: 1})
+	txt.Render(viewport.RenderCtx{Buf: buf}, layout.Rect{X: 0, Y: 0, Width: 5, Height: 1})
 
 	c0 := buf.GetCell(0, 0)
 	if c0.Fg != uint32(style.Cyan) {
@@ -159,7 +160,7 @@ func TestTextRenderClipsByWidth(t *testing.T) {
 
 	buf := buffer.NewBuffer(3, 1)
 	txt := NewText("ABCDE")
-	txt.Render(buf, layout.Rect{X: 0, Y: 0, Width: 3, Height: 1})
+	txt.Render(viewport.RenderCtx{Buf: buf}, layout.Rect{X: 0, Y: 0, Width: 3, Height: 1})
 
 	for i, want := range []rune{'A', 'B', 'C'} {
 		if got := buf.GetCell(i, 0).Rune; got != want {
@@ -182,7 +183,7 @@ func TestButtonRender(t *testing.T) {
 		WithBackground(0x0000FF),
 	)
 
-	btn.Render(buf, layout.Rect{X: 0, Y: 0, Width: 10, Height: 3})
+	btn.Render(viewport.RenderCtx{Buf: buf}, layout.Rect{X: 0, Y: 0, Width: 10, Height: 3})
 
 	// Background fill: every cell should have Bg=0x0000FF and Rune=' '.
 	for y := 0; y < 3; y++ {
@@ -380,6 +381,83 @@ func TestHitTest(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// Viewport — culling and clipping
+// ---------------------------------------------------------------------------
+
+func TestViewportCullingSkipsRender(t *testing.T) {
+	t.Parallel()
+
+	buf := buffer.NewBuffer(10, 10)
+	view := viewport.New(10, 10) // visible: [0,10) x [0,10)
+	btn := NewButton("X",
+		WithForeground(0xFFFFFF),
+		WithBackground(0x0000FF),
+	)
+
+	// Widget at world (100, 100) — completely outside viewport.
+	btn.Render(viewport.RenderCtx{Buf: buf, View: view}, layout.Rect{X: 100, Y: 100, Width: 5, Height: 3})
+
+	// Buffer should be untouched (all zeros).
+	for y := 0; y < 10; y++ {
+		for x := 0; x < 10; x++ {
+			if c := buf.GetCell(x, y); c.Rune != 0 || c.Bg != 0 {
+				t.Errorf("cell(%d,%d) was written but widget is off-screen: %+v", x, y, c)
+			}
+		}
+	}
+}
+
+func TestViewportPartialClipping(t *testing.T) {
+	t.Parallel()
+
+	buf := buffer.NewBuffer(10, 10)
+	view := viewport.New(10, 10) // visible: [0,10) x [0,10)
+	btn := NewButton("X",
+		WithForeground(0xFFFFFF),
+		WithBackground(0x0000FF),
+	)
+
+	// Widget at (-2, -2) with size 5x5. Only cells [0,3) x [0,3) are
+	// on screen (the rest are clipped by negative coords).
+	btn.Render(viewport.RenderCtx{Buf: buf, View: view}, layout.Rect{X: -2, Y: -2, Width: 5, Height: 5})
+
+	// Cells [0,3) x [0,3) should have the background color.
+	for y := 0; y < 3; y++ {
+		for x := 0; x < 3; x++ {
+			if c := buf.GetCell(x, y); c.Bg != 0x0000FF {
+				t.Errorf("cell(%d,%d) Bg: got 0x%06X, want 0x0000FF", x, y, c.Bg)
+			}
+		}
+	}
+
+	// Cells outside [0,3) should be untouched.
+	for y := 3; y < 10; y++ {
+		for x := 3; x < 10; x++ {
+			if c := buf.GetCell(x, y); c.Rune != 0 || c.Bg != 0 {
+				t.Errorf("cell(%d,%d) should be untouched: %+v", x, y, c)
+			}
+		}
+	}
+}
+
+func TestViewportNoViewBackwardCompat(t *testing.T) {
+	t.Parallel()
+
+	buf := buffer.NewBuffer(10, 3)
+	btn := NewButton("OK",
+		WithForeground(0xFFFFFF),
+		WithBackground(0x0000FF),
+	)
+
+	// nil viewport — legacy mode, no offset.
+	btn.Render(viewport.RenderCtx{Buf: buf}, layout.Rect{X: 0, Y: 0, Width: 10, Height: 3})
+
+	if c := buf.GetCell(0, 0); c.Bg != 0x0000FF {
+		t.Errorf("nil viewport should render normally: Bg=0x%06X", c.Bg)
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Benchmarks
 // ---------------------------------------------------------------------------
 
@@ -396,7 +474,7 @@ func BenchmarkButtonRender(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		buf.Clear()
-		btn.Render(buf, rect)
+		btn.Render(viewport.RenderCtx{Buf: buf}, rect)
 	}
 }
 
@@ -412,6 +490,64 @@ func BenchmarkTextRender(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		buf.Clear()
-		txt.Render(buf, rect)
+		txt.Render(viewport.RenderCtx{Buf: buf}, rect)
+	}
+}
+
+// BenchmarkRenderWithViewport proves culling: 1000 widgets off-screen,
+// only 10 visible. Render time should equal rendering 10 widgets.
+func BenchmarkRenderWithViewport(b *testing.B) {
+	const total = 1000
+	const visible = 10
+
+	view := viewport.New(40, 10) // visible: [0,40) x [0,10)
+	buf := buffer.NewBuffer(40, 10)
+
+	// Create 1000 widgets: 10 visible at (0..9, 0), 990 off-screen at (100+).
+	widgets := make([]*Button, total)
+	for i := 0; i < total; i++ {
+		x := i
+		if i >= visible {
+			x = 100 + i // off-screen
+		}
+		widgets[i] = NewButton("X",
+			WithForeground(0xFFFFFF),
+			WithBackground(0x0000FF),
+		)
+		widgets[i].SetGeometry(layout.Rect{X: x, Y: 0, Width: 3, Height: 1})
+	}
+
+	ctx := viewport.RenderCtx{Buf: buf, View: view}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		buf.Clear()
+		for _, w := range widgets {
+			w.Render(ctx, w.Geometry())
+		}
+	}
+}
+
+// BenchmarkRenderNoViewportBaseline renders 10 widgets without viewport
+// for comparison with BenchmarkRenderWithViewport.
+func BenchmarkRenderNoViewportBaseline(b *testing.B) {
+	buf := buffer.NewBuffer(40, 10)
+	widgets := make([]*Button, 10)
+	for i := range widgets {
+		widgets[i] = NewButton("X",
+			WithForeground(0xFFFFFF),
+			WithBackground(0x0000FF),
+		)
+		widgets[i].SetGeometry(layout.Rect{X: i * 3, Y: 0, Width: 3, Height: 1})
+	}
+
+	ctx := viewport.RenderCtx{Buf: buf}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		buf.Clear()
+		for _, w := range widgets {
+			w.Render(ctx, w.Geometry())
+		}
 	}
 }

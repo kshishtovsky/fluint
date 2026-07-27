@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"github.com/kshishtovsky/fluint/core/buffer"
+	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/layout"
 )
 
@@ -22,19 +23,26 @@ func NewText(text string, opts ...Option) *Text {
 	}
 }
 
-// Render writes the text runes into buf starting at (rect.X, rect.Y).
-// If the text exceeds rect.Width it is clipped. Each cell is written
-// with the configured style. The widget's geometry is updated to rect.
-func (t *Text) Render(buf *buffer.Buffer, rect layout.Rect) {
+// Render writes the text runes into ctx.Buf starting at the screen-space
+// position corresponding to rect's world-space origin. Text outside the
+// viewport is culled entirely; partial visibility is clipped per-cell.
+func (t *Text) Render(ctx viewport.RenderCtx, rect layout.Rect) {
 	t.rect = rect
+
+	if !Visible(ctx.View, rect.X, rect.Y, rect.Width, 1) {
+		return
+	}
+
+	sx, sy := Screen(ctx.View, rect.X, rect.Y)
+
 	var cell buffer.Cell
-	x := rect.X
+	x := sx
 	for _, r := range t.text {
-		if x >= rect.X+rect.Width {
+		if x >= sx+rect.Width {
 			break
 		}
 		cell.Rune = r
-		buf.SetCell(x, rect.Y, t.config.style.Apply(cell))
+		ctx.Buf.SetCell(x, sy, t.config.style.Apply(cell))
 		x++
 	}
 }

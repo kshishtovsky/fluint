@@ -11,6 +11,7 @@ import (
 
 	"github.com/kshishtovsky/fluint/anim"
 	"github.com/kshishtovsky/fluint/core/buffer"
+	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/layout"
 	"github.com/kshishtovsky/fluint/style"
 	"github.com/kshishtovsky/fluint/widgets"
@@ -80,8 +81,9 @@ func main() {
 	}
 	tl.Add(newPulseTween())
 
-	// ── Render loop ─────────────────────────────────────────────────
+	// ── Render context ───────────────────────────────────────────────
 	buf := buffer.NewBuffer(width, height)
+	ctx := viewport.RenderCtx{Buf: buf} // no viewport — screen-space
 	frameInterval := time.Second / fps
 	ticker := time.NewTicker(frameInterval)
 	defer ticker.Stop()
@@ -98,9 +100,9 @@ func main() {
 
 		// Clear and render.
 		buf.Clear()
-		title.Render(buf, titleRect)
-		body.Render(buf, bodyRect)
-		button.Render(buf, btnRect)
+		title.Render(ctx, titleRect)
+		body.Render(ctx, bodyRect)
+		button.Render(ctx, btnRect)
 
 		// Log every 30 frames (~0.5 s).
 		if frame%30 == 0 {

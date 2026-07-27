@@ -10,6 +10,7 @@ core/buffer         — Cell grid (rune + style + attrs), front/back buffer
 core/diff           — Back vs front → minimal changeset
 core/loop           — Frame scheduler, delta-time, event bus
 core/router         — Event routing, focus management, hit-testing
+core/viewport       — Camera/viewport, virtual canvas, culling, coordinate translation
 render/ansi         — Changeset → ANSI bytes, synchronized output (mode 2026)
 anim                — Easing, tween/timeline, delta-time interpolation
 layout              — Flexbox-like layout system (ADR-0001)
