@@ -128,7 +128,7 @@ func drainBuffer(ctx context.Context, rb *RingBuf, parser *Parser, events chan<-
 
 			// Drain any pending events from re-processing.
 			for {
-				pev, pok := parser.Next(nil)
+				pev, _, pok := parser.Next(nil)
 				if !pok {
 					break
 				}
