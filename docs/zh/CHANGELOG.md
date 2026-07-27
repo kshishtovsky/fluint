@@ -5,7 +5,7 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
-## [v0.1.1]
+## [v0.1.1] - 2026-07-27
 
 ### 新增
 - `core/buffer` 包：基于面向数据设计 (Data-Oriented Design) 的扁平终端单元格网格 (`Buffer`)，具备 16 字节对齐的 `Cell` 内存布局、零内存分配 `Clear()` 与安全的坐标裁剪。
