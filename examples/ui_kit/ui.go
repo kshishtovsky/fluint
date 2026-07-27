@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/kshishtovsky/fluint/core/buffer"
 	"github.com/kshishtovsky/fluint/core/router"
 	"github.com/kshishtovsky/fluint/core/viewport"
 	"github.com/kshishtovsky/fluint/layout"
@@ -96,6 +97,14 @@ func newStatus(r *router.Router, ui *uiState) *widgets.Text {
 }
 
 func renderUI(ctx viewport.RenderCtx, ui *uiState, w, h int) {
+	// Global background: black canvas with white default fg.
+	bg := buffer.Cell{Rune: ' ', Fg: 0xFFFFFF, Bg: 0x000000}
+	for y := 0; y < ctx.Buf.Height; y++ {
+		for x := 0; x < ctx.Buf.Width; x++ {
+			ctx.Buf.SetCell(x, y, bg)
+		}
+	}
+
 	// Layout: title + messages area (scrollable) + input + status.
 	// Messages get all remaining space. Input is fixed 3 rows (border + text).
 	root := &layout.Container{

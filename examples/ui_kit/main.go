@@ -32,8 +32,24 @@ func main() {
 		w, h = 80, 24
 	}
 
-	_, _ = tty.Write([]byte("\x1b[?1000h\x1b[?1006h\x1b[2J\x1b[?25l"))
-	defer func() { _, _ = tty.Write([]byte("\x1b[?1000l\x1b[?1006l\x1b[?25h\x1b[2J\x1b[H")) }()
+	// Enable mouse, hide cursor, clear screen, set black background.
+	_, _ = tty.Write([]byte(
+		"\x1b[?1000h" + // enable mouse click
+			"\x1b[?1006h" + // enable SGR mouse
+			"\x1b[?25l" + // hide cursor
+			"\x1b[2J" + // clear screen
+			"\x1b[48;2;0;0;0m" + // set bg to black
+			"\x1b[38;2;255;255;255m" + // set fg to white
+			"\x1b[H", // cursor home
+	))
+	defer func() {
+		_, _ = tty.Write([]byte(
+			"\x1b[0m" + // reset attributes
+				"\x1b[?25h" + // show cursor
+				"\x1b[2J" + // clear screen
+				"\x1b[H", // cursor home
+		))
+	}()
 
 	l := loop.NewLoop(tty, w, h)
 	l.Start()
