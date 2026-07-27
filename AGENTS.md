@@ -40,6 +40,8 @@ Documentation uses a **mirrored 3-language structure** under [`/docs`](file:///e
 2. **Commit Language & Messages:**
    - **ALL commit messages MUST be in English.**
    - Follow Conventional Commits format (e.g., `feat(term): add zero-alloc escape parser`, `fix(buffer): resolve race condition in diff`).
+3. **Automated PR Creation:**
+   - After the USER approves a completed task, the agent MUST create a Pull Request from `dev` to `main` using `gh pr create --base main --head dev --title "..." --body "..."`. The agent MUST ONLY create the PR and NEVER merge it.
 
 ---
 
