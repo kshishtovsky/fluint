@@ -5,6 +5,13 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
+## [v0.5.0] - 2026-07-28
+
+### 新增
+- `style` 包：值语义样式 API，包含 `Color` 类型（packed 0x00RRGGBB）、16 个预定义调色板颜色及 `Style` 结构体。所有修改方法（`Foreground`、`Background`、`Bold`、`Italic`、`Underline`、`Dim`、`Strikethrough`、`Reverse`）按值返回 `Style`，支持零分配链式调用。`Apply(buffer.Cell)` 将颜色和属性合并到单元格副本中。
+- `widgets` 包：`WithStyle(style.Style)` 选项用于向组件传递完整样式。保留现有 `WithForeground`/`WithBackground`/`WithBold` 选项以确保向后兼容。`Button` 新增 `Style()` 和 `SetStyle()` 访问器，支持动画驱动的样式变更。
+- 示例 `examples/ui_kit`：完整子系统演示 — layout（含 Basis/Grow 的 Column 容器）、组件（Text、Button）、样式与动画（通过 `anim.Tween` 实现按钮背景脉冲效果，以 60 fps 循环插值 green ↔ yellow 颜色）。
+
 ## [v0.2.0] - 2026-07-28
 
 ### 新增
