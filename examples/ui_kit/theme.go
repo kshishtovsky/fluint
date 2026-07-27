@@ -53,24 +53,22 @@ var (
 var (
 	ThinkingCardStyle = style.New().
 				Background(PaperAlt).
-				RoundedBorder(InkMuted).
-				DitherShadow(3, 2, style.ShadowColor).
+				Shadow(1, 1, style.ShadowColor).
 				Padding(1, 0)
 
 	AnswerCardStyle = style.New().
 			Background(Paper).
-			RoundedBorder(AccentCool).
-			DitherShadow(3, 2, style.ShadowColor).
+			Shadow(1, 1, style.ShadowColor).
 			Padding(1, 0)
 
 	InfoCardStyle = style.New().
 			Background(Paper).
-			RoundedBorder(Accent).
+			Shadow(1, 1, style.ShadowColor).
 			Padding(1, 0)
 
 	UserCardStyle = style.New().
 			Background(Paper).
-			RoundedBorder(AccentWarm).
+			Shadow(1, 1, style.ShadowColor).
 			Padding(1, 0)
 
 	InputCardStyle = style.New().

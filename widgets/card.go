@@ -114,56 +114,49 @@ func (c *Card) drawShadow(ctx viewport.RenderCtx, sx, sy, w, h int) {
 	}
 }
 
-// drawSubCellShadow draws a 1-cell shadow using half-block runes (▐, ▄, ▒).
+// drawSubCellShadow draws a 2-layer shadow outside the card rect.
+//
+// Layer 1 (adjacent): ▒ — medium shade, dense.
+// Layer 2 (one out):  ░ — light shade, fading.
+//
+// Visual (card = █, no border):
+//
+//	█████████▒░
+//	█████████▒
+//	█████████▒
+//	 ▒▒▒▒▒▒▒▒░
+//	  ░░░░░░░
 func (c *Card) drawSubCellShadow(ctx viewport.RenderCtx, sx, sy, w, h int, sh style.ShadowStyle) {
 	fg := uint32(sh.Color)
 	bufW := ctx.Buf.Width
 	bufH := ctx.Buf.Height
 
-	if sh.OffsetX > 0 {
-		x := sx + w
-		if x >= 0 && x < bufW {
-			for y := sy; y < sy+h; y++ {
-				if y < 0 || y >= bufH {
-					continue
-				}
-				old := ctx.Buf.GetCell(x, y)
-				ctx.Buf.SetCell(x, y, buffer.Cell{
-					Rune: style.ShadowRight,
-					Fg:   fg,
-					Bg:   old.Bg,
-				})
-			}
+	write := func(x, y int, ch rune) {
+		if x < 0 || x >= bufW || y < 0 || y >= bufH {
+			return
 		}
+		old := ctx.Buf.GetCell(x, y)
+		ctx.Buf.SetCell(x, y, buffer.Cell{Rune: ch, Fg: fg, Bg: old.Bg})
 	}
 
-	if sh.OffsetY > 0 {
-		y := sy + h
-		if y >= 0 && y < bufH {
-			for x := sx; x < sx+w; x++ {
-				if x < 0 || x >= bufW {
-					continue
-				}
-				old := ctx.Buf.GetCell(x, y)
-				ctx.Buf.SetCell(x, y, buffer.Cell{
-					Rune: style.ShadowBottom,
-					Fg:   fg,
-					Bg:   old.Bg,
-				})
-			}
-		}
+	// Right column — layer 1: ▒ at X+W, rows Y..Y+H-1.
+	for y := sy; y < sy+h; y++ {
+		write(sx+w, y, style.ShadowLayer1)
 	}
 
-	if sh.OffsetX > 0 && sh.OffsetY > 0 {
-		cx, cy := sx+w, sy+h
-		if cx >= 0 && cx < bufW && cy >= 0 && cy < bufH {
-			old := ctx.Buf.GetCell(cx, cy)
-			ctx.Buf.SetCell(cx, cy, buffer.Cell{
-				Rune: style.ShadowCorner,
-				Fg:   fg,
-				Bg:   old.Bg,
-			})
-		}
+	// Bottom row — layer 1: ▒ at Y+H, cols X..X+W-1.
+	for x := sx; x < sx+w; x++ {
+		write(x, sy+h, style.ShadowLayer1)
+	}
+
+	// Right column — layer 2: ░ at X+W+1, rows Y..Y+H.
+	for y := sy; y <= sy+h; y++ {
+		write(sx+w+1, y, style.ShadowLayer2)
+	}
+
+	// Bottom row — layer 2: ░ at Y+H+1, cols X+1..X+W.
+	for x := sx + 1; x <= sx+w; x++ {
+		write(x, sy+h+1, style.ShadowLayer2)
 	}
 }
 

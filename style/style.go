@@ -33,10 +33,9 @@ const (
 	Brown       Color = 0x008B4513
 	ShadowColor Color = 0x0A0A0A // default shadow — near-black, barely visible
 
-	// Shadow runes — half-blocks for sub-cell shadows.
-	ShadowBottom rune = '▄' // U+2584 lower half block — bottom shadow
-	ShadowRight  rune = '▐' // U+2590 right half block — right shadow
-	ShadowCorner rune = '▒' // U+2592 medium shade — bottom-right join (softer)
+	// Shadow layer runes — 2-layer shade gradient.
+	ShadowLayer1 rune = '▒' // U+2592 medium shade — adjacent to card (dense)
+	ShadowLayer2 rune = '░' // U+2591 light shade — one cell out (fading)
 )
 
 // BorderStyle selects the border drawing mode.
