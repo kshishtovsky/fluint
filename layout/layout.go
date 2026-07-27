@@ -218,11 +218,21 @@ func (c *Container) measure(main, cross int, results []Rect, transposed bool) []
 	pos := 0
 	for i := 0; i < n; i++ {
 		ch := &c.Children[i]
-				size := sizes[i]
+		size := sizes[i]
 
-				// Honour the invariant on the last child: give it whatever
-				// slack is left so totals match exactly. We adjust the size
-				// in place so the position stride stays consistent.
+		// Honour the invariant on the last child: give it whatever
+		// slack is left so totals match exactly. We adjust the size
+		// in place so the position stride stays consistent. The
+		// adjustment only runs on the last child to avoid stealing
+		// size from siblings during overflow rounding. It also skips
+		// when sum(sizes) is already pinned to main (e.g. overflow
+		// with no shrink factors collapsed every child to 0).
+		if i == n-1 {
+			sizeSum := 0
+			for _, s := range sizes {
+				sizeSum += s
+			}
+			if sizeSum == main {
 				switch {
 				case main-(pos+size) > 0:
 					size += main - (pos + size)
@@ -232,29 +242,31 @@ func (c *Container) measure(main, cross int, results []Rect, transposed bool) []
 					size = 0
 				}
 				sizes[i] = size
-
-				var rect Rect
-				if transposed {
-					rect = Rect{X: pos, Y: 0, Width: size, Height: cross}
-				} else {
-					rect = Rect{X: 0, Y: pos, Width: cross, Height: size}
-				}
-				pos += size
-
-				results = results[:len(results)+1]
-				results[len(results)-1] = rect
-
-				if ch.Node != nil && size > 0 && cross > 0 {
-					results = ch.Node.Measure(rect.Width, rect.Height, results)
-				}
 			}
-
-			return results
 		}
 
-		// measureSlow is the heap-backed fallback for containers wider than the
-		// stack scratch buffer. It mirrors measure exactly.
-		func (c *Container) measureSlow(main, cross int, results []Rect, transposed bool, sizes []int) []Rect {
+		var rect Rect
+		if transposed {
+			rect = Rect{X: pos, Y: 0, Width: size, Height: cross}
+		} else {
+			rect = Rect{X: 0, Y: pos, Width: cross, Height: size}
+		}
+		pos += size
+
+		results = results[:len(results)+1]
+		results[len(results)-1] = rect
+
+		if ch.Node != nil && size > 0 && cross > 0 {
+			results = ch.Node.Measure(rect.Width, rect.Height, results)
+		}
+	}
+
+	return results
+}
+
+// measureSlow is the heap-backed fallback for containers wider than the
+// stack scratch buffer. It mirrors measure exactly.
+func (c *Container) measureSlow(main, cross int, results []Rect, transposed bool, sizes []int) []Rect {
 	n := len(c.Children)
 	if n == 0 {
 		return results
@@ -326,37 +338,37 @@ func (c *Container) measure(main, cross int, results []Rect, transposed bool) []
 	pos := 0
 	for i := 0; i < n; i++ {
 		ch := &c.Children[i]
-				size := sizes[i]
+		size := sizes[i]
 
-				// Mirror of the invariant fix in measure: keep the residual
-				// adjustment explicit so the position stride stays consistent.
-				switch {
-				case main-(pos+size) > 0:
-					size += main - (pos + size)
-				case main-(pos+size) < 0 && size+(main-(pos+size)) >= 0:
-					size += main - (pos + size)
-				case size+(main-(pos+size)) < 0:
-					size = 0
-				}
-				sizes[i] = size
-
-				var rect Rect
-				if transposed {
-					rect = Rect{X: pos, Y: 0, Width: size, Height: cross}
-				} else {
-					rect = Rect{X: 0, Y: pos, Width: cross, Height: size}
-				}
-				pos += size
-
-				results = results[:len(results)+1]
-				results[len(results)-1] = rect
-
-				if ch.Node != nil && size > 0 && cross > 0 {
-					results = ch.Node.Measure(rect.Width, rect.Height, results)
-				}
-			}
-			return results
+		// Mirror of the invariant fix in measure: keep the residual
+		// adjustment explicit so the position stride stays consistent.
+		switch {
+		case main-(pos+size) > 0:
+			size += main - (pos + size)
+		case main-(pos+size) < 0 && size+(main-(pos+size)) >= 0:
+			size += main - (pos + size)
+		case size+(main-(pos+size)) < 0:
+			size = 0
 		}
+		sizes[i] = size
+
+		var rect Rect
+		if transposed {
+			rect = Rect{X: pos, Y: 0, Width: size, Height: cross}
+		} else {
+			rect = Rect{X: 0, Y: pos, Width: cross, Height: size}
+		}
+		pos += size
+
+		results = results[:len(results)+1]
+		results[len(results)-1] = rect
+
+		if ch.Node != nil && size > 0 && cross > 0 {
+			results = ch.Node.Measure(rect.Width, rect.Height, results)
+		}
+	}
+	return results
+}
 
 // Leaf is a leaf node that occupies exactly its available rect.
 // It produces exactly one Rect per Measure call.

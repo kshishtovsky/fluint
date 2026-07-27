@@ -9,11 +9,11 @@ import (
 
 // ColorDepth constants representing terminal color capabilities.
 const (
-	ColorMono  = 0        // Monochrome — no color support.
-	Color8     = 8        // 8 standard ANSI colors.
-	Color16    = 16       // 16 standard/bright ANSI colors.
-	Color256   = 256      // 256-color palette (xterm).
-	ColorTrue  = 16777216 // 24-bit true color (16M colors).
+	ColorMono = 0        // Monochrome — no color support.
+	Color8    = 8        // 8 standard ANSI colors.
+	Color16   = 16       // 16 standard/bright ANSI colors.
+	Color256  = 256      // 256-color palette (xterm).
+	ColorTrue = 16777216 // 24-bit true color (16M colors).
 )
 
 // Escape sequence constants for terminal capability detection.

@@ -33,19 +33,22 @@ type Buffer struct {
 }
 
 // NewBuffer creates a new Buffer with the specified width and height.
+//
+// NewBuffer allocates a Buffer of width×height cells, all set to the
+// zero-value Cell (space rune, default colors).
 func NewBuffer(width, height int) *Buffer {
 	if width < 0 {
 		width = 0
 	}
-	// NewBuffer allocates a Buffer of width×height cells, all set to the
-	// zero-value Cell (space rune, default colors).
-	func NewBuffer(width, height int) *Buffer {
-		return &Buffer{
-			Width:  width,
-			Height: height,
-			Cells:   make([]Cell, width*height),
-		}
+	if height < 0 {
+		height = 0
 	}
+	return &Buffer{
+		Width:  width,
+		Height: height,
+		Cells:  make([]Cell, width*height),
+	}
+}
 
 // SetCell sets the Cell at coordinate (x, y).
 //
@@ -100,7 +103,22 @@ func (b *Buffer) Resize(width, height int) {
 	}
 }
 
-// SizeofCell returns the unsafe byte size of Cell struct.
-func SizeofCell() uintptr {
+// Clone returns a deep copy of the buffer with independently allocated cell storage.
+func (b *Buffer) Clone() *Buffer {
+	if b == nil {
+		return nil
+	}
+	clone := &Buffer{
+		Width:  b.Width,
+		Height: b.Height,
+		Cells:  make([]Cell, len(b.Cells)),
+	}
+	copy(clone.Cells, b.Cells)
+	return clone
+}
+
+// SizeOfCell returns the compile-time constant size of a Cell in bytes.
+// Kept as a function for forward compatibility if Cell ever grows.
+func SizeOfCell() uintptr {
 	return unsafe.Sizeof(Cell{})
 }
