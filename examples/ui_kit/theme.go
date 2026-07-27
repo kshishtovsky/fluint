@@ -57,17 +57,17 @@ var (
 				Padding(1, 0)
 
 	AnswerCardStyle = style.New().
-			Background(Paper).
+			Background(PaperAlt).
 			Shadow(1, 1, style.ShadowColor).
 			Padding(1, 0)
 
 	InfoCardStyle = style.New().
-			Background(Paper).
+			Background(PaperAlt).
 			Shadow(1, 1, style.ShadowColor).
 			Padding(1, 0)
 
 	UserCardStyle = style.New().
-			Background(Paper).
+			Background(PaperAlt).
 			Shadow(1, 1, style.ShadowColor).
 			Padding(1, 0)
 
