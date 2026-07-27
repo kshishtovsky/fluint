@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hybrid terminal capabilities detection (`Detect()` and `DetectActive()`) in `internal/term/caps.go` supporting DECRQM mode 2026 synchronized output and Kitty keyboard protocol according to ADR-0002.
 - SonarCloud configuration file (`sonar-project.properties`).
 
+### Fixed
+- Updated `golangci-lint-action` version to `latest` in CI pipeline for Go 1.25 compatibility.
+
 ## [v0.1.0] - 2026-07-27
 
 ### Added

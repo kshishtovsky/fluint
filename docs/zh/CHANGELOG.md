@@ -15,6 +15,9 @@
 - `internal/term/caps.go` 中的混合终端能力检测机制 (`Detect()` 和 `DetectActive()`)，遵循 ADR-0002 支持 DECRQM mode 2026 同步输出与 Kitty 键盘协议。
 - SonarCloud 配置文件 (`sonar-project.properties`)。
 
+### 修复
+- 将 CI 流水线中的 `golangci-lint-action` 版本更新为 `latest`，以支持 Go 1.25。
+
 ## [v0.1.0] - 2026-07-27
 
 ### 新增
