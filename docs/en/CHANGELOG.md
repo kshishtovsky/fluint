@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.8.0] - 2026-07-28
+
+### Added
+- Package `widgets`: `List` widget — scrollable, virtualised list with auto-scroll, inverted selection highlight, Up/Down/Enter keyboard navigation, and left-click row selection. Only visible rows are rendered (virtualisation). `WithOnSelect` callback option. Zero-alloc render (~800 ns/op for 1000 items).
+- Package `widgets`: `TextInput` widget — single-line text editor with `[]rune` storage, cursor positioning, horizontal scroll for long text, and keyboard editing (printable runes, Backspace, Delete, Left, Right, Home, End). `WithOnChange` callback option. Cursor rendered as inverted color. Zero-alloc render (~50 ns/op).
+- Example `examples/ui_kit`: comprehensive demo showcasing all widgets (Text, Button, List, TextInput), layout engine, style system, animation, Router with Tab cycling, keyboard navigation, and simulated mouse clicks. Runs a scripted event sequence with real-time buffer snapshots.
+
 ## [v0.7.0] - 2026-07-28
 
 ### Added

@@ -33,10 +33,12 @@ type Node interface {
 
 // Config holds optional configuration shared across all widget types.
 type Config struct {
-	Width   int
-	Height  int
-	style   style.Style
-	onPress func()
+	Width    int
+	Height   int
+	style    style.Style
+	onPress  func()
+	onSelect func(int, ListItem)
+	onChange func(string)
 }
 
 // Option is a functional option that modifies Config.
@@ -100,6 +102,16 @@ func WithReverse() Option {
 // WithOnPress sets the callback invoked when a Button is pressed.
 func WithOnPress(fn func()) Option {
 	return func(c *Config) { c.onPress = fn }
+}
+
+// WithOnSelect sets the callback invoked when a List selection is confirmed.
+func WithOnSelect(fn func(index int, item ListItem)) Option {
+	return func(c *Config) { c.onSelect = fn }
+}
+
+// WithOnChange sets the callback invoked when TextInput content changes.
+func WithOnChange(fn func(text string)) Option {
+	return func(c *Config) { c.onChange = fn }
 }
 
 // newConfig applies options to a zero Config and returns it.
